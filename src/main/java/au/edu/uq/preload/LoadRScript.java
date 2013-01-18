@@ -43,7 +43,9 @@ import au.edu.uq.statistics.WinsorA;
 public class LoadRScript {
 
 	private static String[] rScriptResource = {
-			"/wards_v2.0.r"
+		"/shpparsing.r",
+		"/wards_v2.2.r"
+			
 	};
 	
 	private static String[] rScript;
@@ -60,6 +62,11 @@ public class LoadRScript {
 	 * @throws IOException
 	 */
 	public static String getWardsClusterScript() throws IOException {
+
+		return getScripts()[1];
+	}
+	
+	public static String getShpParsingScript() throws IOException {
 
 		return getScripts()[0];
 	}

@@ -80,11 +80,11 @@ public class WardsClusteringTest {
 	*/
 	@Test
 	public void test() throws RserveException {
-		System.out.println("Test case xxxx");
+		System.out.println("Test case WardsClustering");
 		
-		WardsClustering wc = new WardsClustering();
-		wc.c = new RConnection();
-		wc.compute();
+		//WardsClustering wc = new WardsClustering();
+		//wc.c = new RConnection();
+		//wc.compute();
 
 	}
 
