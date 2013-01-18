@@ -19,9 +19,10 @@ import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import au.edu.uq.preload.Rserve;
-import au.org.aurin.ands.emp.WardsClustering;
+import au.org.aurin.ands.emp.NewWards;
+import au.org.aurin.ands.emp.Shp2RConnection;
 
-public class WardsClusteringTest {
+public class NewWardsTest {
 
 	@BeforeClass
 	public static void initRserve() {
@@ -44,47 +45,25 @@ public class WardsClusteringTest {
 					+ "to shut it down if the process is owned by a different user");
 		}
 	}
-	/*
-	public REXP dataGenerator() {
-
-		REXP data = null;
-
-		double[] d1 = new double[] { 1.1, 2.2, 3.3, 11.1, 22.2, 33.3 }; // col1
-		double[] d2 = new double[] { 10.0, 20.0, 30.0, 40.0, 50.0, 60.0 }; // col2
-		double[] d3 = new double[] { 100.0, 200.0, 300.0, 400.0, 500.0, 600.0 }; // col1
-//		double[] d4 = new double[] { 100.1, 200.2, 300.3, 1100.1, 2200.2, 33000.3 }; // col2
-		double[] d4 = new double[] { 100.1, 200.2, 300.3, 110.1, 220.2, 3300.3 }; // col2
-		 
-		List<double[]> dataL = new ArrayList<double[]>();
-		dataL.add(d1);
-		dataL.add(d2);
-		dataL.add(d3);
-		dataL.add(d4);
-
-		RList a = new RList();
-		// add each column separately
-		a.put("iCol1", new REXPDouble(dataL.get(0)));
-		a.put("iCol2", new REXPDouble(dataL.get(1)));
-		
-		a.put("dCol1", new REXPDouble(dataL.get(2)));
-		a.put("dCol2", new REXPDouble(dataL.get(3)));
-
-		try {
-			data = REXP.createDataFrame(a);
-		} catch (REXPMismatchException e) {
-			e.printStackTrace();
-		}
-
-		return data;
-	}
-	*/
+	
 	@Test
 	public void test() throws RserveException {
-		System.out.println("Test case WardsClustering");
 		
-		//WardsClustering wc = new WardsClustering();
+		System.out.println("========= Test case NewWards");
+		Shp2RConnection shp2R = new Shp2RConnection();
+		shp2R.shpUrl = "/Users/yiqunc/githubRepositories/thirdparty-analytics/src/main/resources/outputs/tmpRlt";
+		shp2R.exec();
+		
+		NewWards wc = new NewWards();
 		//wc.c = new RConnection();
-		//wc.compute();
+		wc.c = shp2R.c;
+		wc.geodisthreshold = 50;
+		wc.interestedColNames = new String[3];
+		wc.interestedColNames[0] = "X2310";
+		wc.interestedColNames[1] = "X2412";
+		wc.interestedColNames[2] = "X8500";
+		
+		wc.compute();
 
 	}
 
