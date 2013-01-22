@@ -77,18 +77,74 @@ public class NewWards {
 	 * instance
 	 */
 	
-	@Description("Input Integer for geodisthreshold")
+	@Description("Input Integer for geo-distance threshold")
 	@In
-	public int geodisthreshold;
+	public int geodisthreshold = 20;
 	/**
-	 * {@link int} Input Integer for geodisthreshold
+	 * {@link int} Input Integer for geo-distance threshold
 	 */
 	
-	@Description("Input Vector for interestedColNames")
+	@Description("Input Integer for target cluster number")
+	@In
+	public int targetclusternum = 1;
+	/**
+	 * {@link int} Input Integer for target cluster number
+	 */
+	
+	@Description("Input String for interested column names")
+	@In
+	public String interestedColNamesString;
+	/**
+	 * {@link String} Input String for interested column names
+	 */
+	
+	@Description("Input Vector for interested column names")
 	@In
 	public String[] interestedColNames;
 	/**
-	 * {@link String} Input Vector for interestedColNames
+	 * {@link String} Input Vector for interested column names
+	 */
+	
+	@Description("Input String for interested column weights")
+	@In
+	public String interestedColWeightsString;
+	/**
+	 * {@link String} Input String for interested column weights
+	 */
+
+	@Description("Input Vector for interested column weights")
+	@In
+	public double[] interestedColWeights;
+	/**
+	 * {@link double} Input Vector for interested column weights
+	 */
+
+	@Description("Input String for display column names string")
+	@In
+	public String displayColNamesString;
+	/**
+	 * {@link String} Input String for display column names string
+	 */
+	
+	@Description("Input Vector for display column names")
+	@In
+	public String[] displayColNames;
+	/**
+	 * {@link String} Input Vector for display column names
+	 */
+	
+	@Description("Input String for spatial and non-spatial distance weights")
+	@In
+	public String spatialNonSpatialDistWeightsString;
+	/**
+	 * {@link String} Input String for spatial and non-spatial distance weights
+	 */
+	
+	@Description("Input Vector for spatial and non-spatial distance weights")
+	@In
+	public double[] spatialNonSpatialDistWeights;
+	/**
+	 * {@link double} Input Vector for spatial and non-spatial distance weights
 	 */
 	
 	@Description("REXP result complex object")
@@ -117,24 +173,11 @@ public class NewWards {
 
 			// 2. setup the inputs
 			this.c.assign("geodisthreshold", new REXPInteger(this.geodisthreshold));
-			System.out.println("==============="+ this.interestedColNames[0] + this.interestedColNames[1]+ this.interestedColNames[2]);
+			this.c.assign("targetclusternum", new REXPInteger(this.targetclusternum));
+			this.c.assign("displayColNames", new REXPString(this.displayColNames));
 			this.c.assign("interestedColNames", new REXPString(this.interestedColNames));
-			this.c.assign("dummyone", new REXPInteger(9999));
-			//this.c.assign("indepVars", this.independentVarNames);
-
-			// REXP worker = this.c.eval("try(print(R.Version()))");
-			// REXP worker = null;
-			// worker = this.c.eval("try(print(str(dataF)))");
-			// String res = worker.toDebugString();
-			// System.out.println("res = " + res);
-
-			// worker = this.c.eval("try(print(str(depVars)))");
-			// String res1 = worker.toDebugString();
-			// System.out.println("res1 = " + res1);
-			//
-			// worker = this.c.eval("try(print(str(indepVars)))");
-			// String res2 = worker.toDebugString();
-			// System.out.println("res2 = " + res2);
+			this.c.assign("interestedColWeights", new REXPDouble(this.interestedColWeights));
+			this.c.assign("spatialNonSpatialDistWeights", new REXPDouble(this.spatialNonSpatialDistWeights));
 
 			// 3. call the function defined in the script
 			this.worker = c.eval("try(eval(parse(text=script)),silent=FALSE)");
@@ -142,9 +185,7 @@ public class NewWards {
 			if(worker == null){ 
 				System.out.println("worker init failed");
 				return;}
-			
-			//System.out.println("worker result = " + this.worker.toDebugString());
-			
+						
 			// 4. setup the output results
 			this.setupOutputs();
 			
@@ -175,37 +216,38 @@ public class NewWards {
 								+ resultL.at(i).asString());
 					}
 
+					System.out.println("========= test end =========");
 					//this.tmpResultPath = resultL.at(resultL.size() - 1).asList()
 					//this.tmpResultPath = resultL.at(resultL.size() - 1).asList().at("JSON").asString();
 					//System.out.println("JSON R-RESULT = " + this.tmpResultPath);
 					
 					//parse result to geojson
-					URL shpUrl = getClass().getResource("/outputs/tmpRlt.shp");
-				    
-					//File file = new File("/Users/yiqunc/githubRepositories/thirdparty-analytics/src/main/resources/outputs/newDataFrames.shp");				
-					if(shpUrl != null)
-					{
-						File file = new File(shpUrl.getFile());
-					try {
-						System.out.println("shp file feature JSON =======1");
-						FileDataStore store = FileDataStoreFinder.getDataStore(file);
-						System.out.println("shp file feature JSON =======2");
-						SimpleFeatureSource featureSource = store.getFeatureSource();
-						System.out.println("shp file feature JSON =======3");
-						//SimpleFeatureCollection simpleFeatureCollection = featureSource.getFeatures();	
-						//FeatureJSON fjson = new FeatureJSON();	
-						//String rltString =  fjson.toString(simpleFeatureCollection);
-						//System.out.println("shp file feature JSON  = " + rltString);						
-					}catch (Exception e)
-					{
-						e.printStackTrace();
-					}
-					}
-					else
-					{
-						System.out.println("not found =======");
-						
-					}
+//					URL shpUrl = getClass().getResource("/outputs/tmpRlt.shp");
+//				    
+//					//File file = new File("/Users/yiqunc/githubRepositories/thirdparty-analytics/src/main/resources/outputs/newDataFrames.shp");				
+//					if(shpUrl != null)
+//					{
+//						File file = new File(shpUrl.getFile());
+//					try {
+//						System.out.println("shp file feature JSON =======1");
+//						FileDataStore store = FileDataStoreFinder.getDataStore(file);
+//						System.out.println("shp file feature JSON =======2");
+//						SimpleFeatureSource featureSource = store.getFeatureSource();
+//						System.out.println("shp file feature JSON =======3");
+//						//SimpleFeatureCollection simpleFeatureCollection = featureSource.getFeatures();	
+//						//FeatureJSON fjson = new FeatureJSON();	
+//						//String rltString =  fjson.toString(simpleFeatureCollection);
+//						//System.out.println("shp file feature JSON  = " + rltString);						
+//					}catch (Exception e)
+//					{
+//						e.printStackTrace();
+//					}
+//					}
+//					else
+//					{
+//						System.out.println("not found =======");
+//						
+//					}
 					
 					/*
 					 * JSONObject jsonInputs; JSON objInputs =
