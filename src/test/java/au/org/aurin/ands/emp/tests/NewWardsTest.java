@@ -1,5 +1,6 @@
 package au.org.aurin.ands.emp.tests;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,7 +52,10 @@ public class NewWardsTest {
 		
 		System.out.println("========= Test case NewWards");
 		Shp2RConnection shp2R = new Shp2RConnection();
-		shp2R.shpUrl = "/Users/yiqunc/githubRepositories/thirdparty-analytics/src/main/resources/outputs/tmpRlt";
+		String path  = this.getClass().getClassLoader().getResource("outputs").getPath();
+		String shapeName = "tmpRlt";
+		path += "/" + shapeName;
+		shp2R.shpUrl = path;
 		shp2R.exec();
 		
 		NewWards wc = new NewWards();

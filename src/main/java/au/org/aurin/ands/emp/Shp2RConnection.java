@@ -69,10 +69,12 @@ import org.geotools.styling.StyleBuilder;
 
 public class Shp2RConnection {
 
+  @In
 	public String shpUrl;
+  @Out
 	public RConnection c;
-	public REXP worker;
-	
+
+	@Execute
 	public void exec() throws RserveException{
 		try {
 			System.out.println("=========+++"+this.shpUrl);

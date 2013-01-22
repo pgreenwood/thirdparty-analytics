@@ -15,6 +15,10 @@ testPolyList = NULL
 
 f_shpparsing <- function(){
   print(sprintf("======== shpURL :%s", shpUrl))
+  
+#  ogrInfo(dsn=shpUrl,layer = 'OGRGeoJSON')
+#  x<-readOGR(dsn=shpUrl, layer = tmpRlt)
+  
   x <- readShapePoly(shpUrl)
   attr(x@proj4string,"projargs") = "+proj=longlat +ellps=GRS80 +no_defs"
   original_proj4string = attr(x@proj4string,"projargs")
