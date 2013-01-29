@@ -21,6 +21,8 @@ import org.rosuda.REngine.Rserve.RserveException;
 import au.edu.uq.preload.Rserve;
 import au.org.aurin.ands.emp.NewWards;
 import au.org.aurin.ands.emp.Shp2RConnection;
+import au.org.aurin.ands.emp.OutputParsing;
+
 
 public class NewWardsTest {
 
@@ -51,52 +53,32 @@ public class NewWardsTest {
 		
 		System.out.println("========= Test case NewWards");
 		Shp2RConnection shp2R = new Shp2RConnection();
-		shp2R.shpUrl = "/Users/yiqunc/githubRepositories/thirdparty-analytics/src/main/resources/data/ABS_data_by_DZN/DZN/SplitPoly_X_Employment_fullcode";
+		String path  = this.getClass().getClassLoader().getResource("data/ABS_data_by_DZN/DZN").getPath();
+		path += "/" + "SplitPoly_X_Employment_fullcode";
+		
+		shp2R.shpUrl = path;	
+		System.out.println(path);
+		
 		shp2R.exec();
 		
 		NewWards wc = new NewWards();
-		//wc.c = new RConnection();
+
 		wc.c = shp2R.c;
 		
-		wc.geodisthreshold = 20;
-		
+		wc.geodisthreshold = 10;
 		wc.targetclusternum = 1;
-		
-		wc.interestedColNamesString = "C000,X2412,X8500";
-		wc.interestedColNames = wc.interestedColNamesString.split(",");
-
-		wc.displayColNamesString = "LGA_CODE,LGA,ZONE_CODE,C000,X2412,X8500";
-		wc.displayColNames = wc.displayColNamesString.split(",");
-		
+		wc.interestedColNamesString = "X2310,X2412,X8500";
+		wc.displayColNamesString = "LGA_CODE,LGA,ZONE_CODE,X2310,X2412,X8500";
 		wc.interestedColWeightsString = "0.333,0.333,0.333";
-		try {
-			wc.interestedColWeights = this.convertStringArraytoDoubleArray(wc.interestedColWeightsString.split(","));
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			}
-		
-		wc.spatialNonSpatialDistWeightsString = "0.5,0.5";
-		
-		try {
-			wc.spatialNonSpatialDistWeights = this.convertStringArraytoDoubleArray(wc.spatialNonSpatialDistWeightsString.split(","));
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		wc.spatialNonSpatialDistWeightsString = "0.9,0.1";
+		wc.ignoreEmptyRowJobNum = 10;
 		
 		wc.compute();
+		
+		OutputParsing op= new OutputParsing();
+		op.c = wc.cOut;
+		op.exec();
 
 	}
-	
-	public double[] convertStringArraytoDoubleArray(String[] sarray) throws Exception {
-		if (sarray != null) {
-		double rltarray[] = new double[sarray.length];
-		for (int i = 0; i < sarray.length; i++) {
-			rltarray[i] = Double.parseDouble(sarray[i]);
-		}
-			return rltarray;
-		}
-			return null;
-		}
+
 }
