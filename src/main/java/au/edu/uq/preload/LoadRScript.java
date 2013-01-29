@@ -44,7 +44,8 @@ public class LoadRScript {
 
 	private static String[] rScriptResource = {
 		"/shpparsing.r",
-		"/wards_v2.2.r"
+		"/wards_v2.2.r",
+		"/outputparsing.r"
 			
 	};
 	
@@ -71,6 +72,11 @@ public class LoadRScript {
 		return getScripts()[0];
 	}
 
+	public static String getOutParsingScript() throws IOException {
+
+		return getScripts()[2];
+	}
+	
 	/**
 	 * The number of R scripts loaded by {@link LoadRScript} class
 	 * 

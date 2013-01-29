@@ -11,10 +11,12 @@ require(gpclib)
 CONST_projected_proj4string = "+proj=merc +datum=WGS84"
 gAttrData = NULL
 gPolyData = NULL
+gRltList = list()
 gOriginalProj4string = ""
+gIgnoreEmptyRowJobNum = 10
 
 f_shpparsing <- function(){
-  print(sprintf("======== shpURL :%s", shpUrl))
+  #print(sprintf("======== shpURL :%s", shpUrl))
   x <- readShapePoly(shpUrl)
   attr(x@proj4string,"projargs") = "+proj=longlat +ellps=GRS80 +no_defs"
   gOriginalProj4string <<- attr(x@proj4string,"projargs")
