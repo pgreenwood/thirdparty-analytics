@@ -1,14 +1,11 @@
-### BEGIN EXAMPLE aggregarting polygons using dissolve --------------------------------------------------------------------
-# from: http://www.nceas.ucsb.edu/scicomp/usecases/PolygonDissolveOperationsR
-
-# required packages
-library(maptools)   # for geospatial services; also loads foreign and sp
-library(gpclib)     # General Polygon Clipping library 
-library(rgdal)      # for map projection work; also loads sp
-library(rgeos)
-library(PBSmapping) # for GIS_like geospatial object manipulation / anslysis including poly
+# required packages are preloaded and defined here:/Library/Frameworks/R.framework/Versions/2.15/Resources/library/base/R/Rprofile
+#library(maptools)   # for geospatial services; also loads foreign and sp
+#library(gpclib)     # General Polygon Clipping library 
+#library(rgdal)      # for map projection work; also loads sp
+#library(rgeos)
+#library(PBSmapping) # for GIS_like geospatial object manipulation / anslysis including poly
 gpclibPermit()
-require(gpclib)
+#require(gpclib)
 
 CONST_projected_proj4string = "+proj=merc +datum=WGS84"
 # the output projection string is EPSG4283, which can be obtained this way:
