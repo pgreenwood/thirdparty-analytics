@@ -67,7 +67,7 @@ import org.geotools.styling.SLD;
 import org.geotools.styling.Style;
 import org.geotools.styling.StyleBuilder;
 
-public class Shp2RConnection {
+public class SpatialData2RConnection {
 
 	@In
 	public String shpUrl;
