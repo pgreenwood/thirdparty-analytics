@@ -75,6 +75,7 @@ public class Shp2RConnection {
 	@Out
 	public RConnection c;
 	
+	@Execute
 	public void exec() throws RserveException{
 		try {
 			this.rWorkingDir = this.getClass().getClassLoader().getResource("outputs").getPath();
