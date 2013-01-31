@@ -137,6 +137,9 @@ public class NewWards {
 	@Description("shp file path of tmp result")
 	@Out
 	public String tmpResultPath;
+	
+	@Description("R connection pass on")
+	@Out
 	public RConnection cOut;
 	
 	@Execute
