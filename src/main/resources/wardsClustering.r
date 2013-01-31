@@ -1,22 +1,26 @@
-### BEGIN EXAMPLE aggregarting polygons using dissolve --------------------------------------------------------------------
-# from: http://www.nceas.ucsb.edu/scicomp/usecases/PolygonDissolveOperationsR
-
-# required packages
-library(maptools)   # for geospatial services; also loads foreign and sp
-library(gpclib)     # General Polygon Clipping library 
-library(rgdal)      # for map projection work; also loads sp
-library(rgeos)
-library(PBSmapping) # for GIS_like geospatial object manipulation / anslysis including poly
+# required packages are preloaded and defined here:/Library/Frameworks/R.framework/Versions/2.15/Resources/library/base/R/Rprofile
+#library(maptools)   # for geospatial services; also loads foreign and sp
+#library(gpclib)     # General Polygon Clipping library 
+#library(rgdal)      # for map projection work; also loads sp
+#library(rgeos)
+#library(PBSmapping) # for GIS_like geospatial object manipulation / anslysis including poly
 gpclibPermit()
-require(gpclib)
+#require(gpclib)
 
 CONST_projected_proj4string = "+proj=merc +datum=WGS84"
+# the output projection string is EPSG4283, which can be obtained this way:
+# EPSG = make_EPSG()
+# filter = EPSG[,"code"]=="4283"
+# filter[which(is.na(filter))] = FALSE
+# projstring = EPSG[filter,"prj4"]
+CONST_EPSG4283_proj4string = "+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs"
+
 CONST_na_nsp_distance = 0.5
 GLOBAL_polygon_id_prefix = "ANDS_M_"
 GLOBAL_polygon_id_counter  = 1
 
 #set up the working directory
-setwd("/Users/Shared/Documents/AURIN/R")
+setwd(rWorkingDir)
 
 gShowDebugInfo = TRUE
 debugPrint <- function(str){
@@ -93,7 +97,7 @@ f_norm <- function(vec, na.rep.auto = FALSE, na.rep = NA){
 }
 
 # wards: applied geodistance threshold, with distance calculation process optimised
-f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string=CONST_projected_proj4string, clustnum = 1, repectdthresh = TRUE, useCentroidDist = TRUE){
+f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string=CONST_projected_proj4string, clustnum = 1, useCentroidDist = TRUE){
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   # do ward's clustering on spatial and non-spatial attributes.
   # input:
@@ -104,8 +108,7 @@ f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string
   # (5) dthresh: geo distance threshold (numeric), kilometers. If the distance between two polygons exceeds this value, they cannot be merged into one cluster
   # (6) proj4string: output shp file projection information, so the output can be reprojected or no-projection applied (using GCS)
   # (7) clustnum: target clustering number
-  # (8) repectdthresh: if true, stop algorithm when dthresh is reached; otherwise, continue merge until clustnum is reached
-  # (9) useCentroidDist: if true, use the centroid distance instead of the hausdorff distance to measure the distance between polygons. It speeds up the process enormously. 
+  # (8) useCentroidDist: if true, use the centroid distance instead of the hausdorff distance to measure the distance between polygons. It speeds up the process enormously. 
   # output:
   # new shp file with a new data column marks its ward's cluster number
   #
@@ -122,6 +125,7 @@ f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string
   
   # append a new column to hold the original polygon/data sequence
   adata[,"orgIdx"] = c(1:nrow(adata))
+  adata[,"wardclut"] = c(1:nrow(adata))
   adata_bak = adata
   pdata_bak = pdata
   
@@ -232,7 +236,7 @@ f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string
       break
     }
     
-    print(sprintf("merging, %d plogyons remain",CUR_POLYGON_NUM))
+    print(sprintf("merging, %d polygons remain",CUR_POLYGON_NUM))
     
     # make a workable copy of dist_mat in each loop
     filtered_dist_mat = dist_mat
@@ -254,8 +258,8 @@ f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string
     # sort filtered_dist_mat on "s_dist" column
     filtered_dist_mat = filtered_dist_mat[order(filtered_dist_mat[,"s_dist"]), ,drop=FALSE]
     # get the original polygon index wantted
-    min_idx_i = as.integer(filtered_dist_mat[1,"idx_i"])
-    min_idx_j = as.integer(filtered_dist_mat[1,"idx_j"])
+    min_idx_i = min(as.integer(filtered_dist_mat[1,"idx_i"]), as.integer(filtered_dist_mat[1,"idx_j"]))
+    min_idx_j = max(as.integer(filtered_dist_mat[1,"idx_i"]), as.integer(filtered_dist_mat[1,"idx_j"]))
     min_pdf_dist = filtered_dist_mat[1,"s_dist"]
     
     debugPrint(sprintf("min pdf distance found between (p%d,p%d) :  %.10f",min_idx_i, min_idx_j, min_pdf_dist))
@@ -358,19 +362,10 @@ f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string
       nsp_dist = sqrt(nsp_dist)
       
       # set row values for dist_dataframe
-      if (min_idx_i < aRest[rest_idx,"orgIdx"]){
-        idx_i = min_idx_i
-        idx_j = aRest[rest_idx,"orgIdx"]
-      }else{
-        idx_i = aRest[rest_idx,"orgIdx"]
-        idx_j = min_idx_i
-      }
-      
-      #dist_mat = rbind(dist_mat, c(sp_dist, nsp_dist, idx_i, idx_j))
       tmp_dist_mat[tmp_rowcounter,"s_dist"] = sp_dist
       tmp_dist_mat[tmp_rowcounter,"ns_dist"] = nsp_dist
-      tmp_dist_mat[tmp_rowcounter,"idx_i"] = idx_i
-      tmp_dist_mat[tmp_rowcounter,"idx_j"] = idx_j
+      tmp_dist_mat[tmp_rowcounter,"idx_i"] = min(min_idx_i, aRest[rest_idx,"orgIdx"])
+      tmp_dist_mat[tmp_rowcounter,"idx_j"] = max(min_idx_i, aRest[rest_idx,"orgIdx"])
       tmp_rowcounter = tmp_rowcounter + 1
     }
     
@@ -384,138 +379,55 @@ f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string
   sp = SpatialPolygons(pdata)
   sp@proj4string = CRS(CONST_projected_proj4string)
   newDataFrame = SpatialPolygonsDataFrame(sp,data=adata, match.ID = FALSE)
-  newDataFrame_pj = spTransform(newDataFrame,CRS(proj4string))
+  newDataFrame_pj = spTransform(newDataFrame,CRS(CONST_EPSG4283_proj4string))
   
   # save a new copy of origial polygons with updated cluseter information
   sp_bak =SpatialPolygons(pdata_bak)
   sp_bak@proj4string = CRS(CONST_projected_proj4string)
   newDataFrame_bak = SpatialPolygonsDataFrame(sp_bak,data=adata_bak, match.ID = FALSE)
-  newDataFrame_pj_bak = spTransform(newDataFrame_bak,CRS(proj4string))
+  newDataFrame_pj_bak = spTransform(newDataFrame_bak,CRS(CONST_EPSG4283_proj4string))
   
   #plot(newDataFrame_pj_bak)
   #plot(newDataFrame_pj)
   
   # output data
-  writeOGR(obj=newDataFrame_pj, dsn="./outputs", layer="tmpRlt", driver="ESRI Shapefile", check_exists=TRUE, overwrite_layer=TRUE)
-  writeOGR(obj=newDataFrame_pj_bak, dsn="./outputs", layer="tmpRlt_bak", driver="ESRI Shapefile", check_exists=TRUE, overwrite_layer=TRUE)
+  #writeOGR(obj=newDataFrame_pj, dsn="./outputs", layer="tmpRlt", driver="ESRI Shapefile", check_exists=TRUE, overwrite_layer=TRUE)
+  #writeOGR(obj=newDataFrame_pj_bak, dsn="./outputs", layer="tmpRlt_bak", driver="ESRI Shapefile", check_exists=TRUE, overwrite_layer=TRUE)
   
   algEndTime = Sys.time()
   print(paste("=== algorithm ends at ", Sys.time(), " ==="))
   print(sprintf("=== all done (in %.2f seconds) ===", as.numeric(algEndTime-algStartTime, units="secs")))
   
-  return(as.list.data.frame(adata))
+  # put result into gRltList
+  gRltList[[1]] <<- newDataFrame_pj_bak
+  gRltList[[2]] <<- newDataFrame_pj@data
+  
 }
 
-f_test <- function(num=20, geodisthreshold = 1000, targetclusternum = 1, useCentroidDist = TRUE){
-  x <- readOGR(dsn="./data/shapefiles/testdata",layer="dissolved_20",encoding="utf8")
+f_run <- function(useCentroidDist = TRUE, ignoreEmptyRow = TRUE){
   
-  original_proj4string = attr(x@proj4string,"projargs")
-  
-  # check if the original data is projected
-  # Transform the polygons (which were read in as unprojected geographic coordinates) to an Albers Equal Area projection
-  # this is essential since we need calculate distance/area for polygons
-  if (is.projected(x)){
-    x_pj = x
-  } else
-  {
-    x_pj = spTransform(x,CRS(CONST_projected_proj4string))
+  if (length(displayColNames) > 0){
+    gAttrData <<- gAttrData[, displayColNames]
   }
   
-  TEST_DATA_ROW_NUM = num
-  
-  testData = x_pj@data[1:TEST_DATA_ROW_NUM,]
-  testPolyList = x_pj@polygons[1:TEST_DATA_ROW_NUM]
-  nmwt=data.frame(cbind(ATTR_NAME=c("Morans_I","attr1","attr2"), ATTR_WEIGHT=c(0.9,0.05,0.05)))
-  
-  f_wards(adata=testData, pdata=testPolyList, ianmwh=nmwt, snswh=c(0.5,0.5), dthresh=geodisthreshold, proj4string=original_proj4string, clustnum=targetclusternum, useCentroidDist=useCentroidDist)
-}
-
-f_run <- function(num = -1, 
-                  geodisthreshold = 20, 
-                  targetclusternum = 1, 
-                  useCentroidDist = TRUE,
-                  displayColNames = c("LGA_CODE", "LGA", "ZONE_CODE", "X2310", "X2412", "X8500"),
-                  interestedColNames = c("X2310", "X2412", "X8500"),
-                  interestedColWeights = c(0.333, 0.333, 0.333),
-                  spatialNonSpatialDistWeights = c(0.5, 0.5),
-                  ignoreEmptyRow = TRUE
-                  ){
-  #x <- readOGR(dsn="./outputs",layer="SplitPoly_X_Employment",encoding="utf8")
-  #original_proj4string = attr(x@proj4string,"projargs")
-  
-  # use fast read mode
-  x <- readShapePoly("./outputs/SplitPoly_X_Employment")
-  # assign proj infomation
-  attr(x@proj4string,"projargs") = "+proj=longlat +ellps=GRS80 +no_defs"
-  original_proj4string = attr(x@proj4string,"projargs")
-  
-  # check if the original data is projected
-  # Transform the polygons (which were read in as unprojected geographic coordinates) to an Albers Equal Area projection
-  # this is essential since we need calculate distance/area for polygons
-  if (is.projected(x)){
-    x_pj = x
-  } else
-  {
-    x_pj = spTransform(x,CRS(CONST_projected_proj4string))
-  }
-  
-  if (num <= 0 | num > nrow(x_pj@data)){
-    DATA_ROW_NUM = nrow(x_pj@data)
-  } else {
-    DATA_ROW_NUM = num
-  }
-    
-  testData = x_pj@data[1:DATA_ROW_NUM, displayColNames]
-  testData[,"wardclut"] = 1:DATA_ROW_NUM
-  testPolyList = x_pj@polygons[1:DATA_ROW_NUM]
-  
+  gAttrData[,"wardclut"] = 1:nrow(gAttrData)
+     
   # ignore rows if all interested column values are 0
   if (ignoreEmptyRow==TRUE){
-    filter = rep(FALSE, nrow(testData))
+    filter = rep(FALSE, nrow(gAttrData))
     for(colname in interestedColNames){
-      filter = filter | (testData[,colname] > 0)
+      filter = filter | (gAttrData[,colname] > gIgnoreEmptyRowJobNum)
     }
-    testData = testData[filter,]
-    testPolyList = testPolyList[filter]
+    gAttrData = gAttrData[filter,]
+    gPolyData = gPolyData[filter]
   }
+  
+  print(sprintf("=== rows :%i", nrow(gAttrData)))
+  
   
   nmwt=data.frame(cbind(ATTR_NAME=interestedColNames, ATTR_WEIGHT=interestedColWeights))
   
-  f_wards(adata=testData, pdata=testPolyList, ianmwh=nmwt, snswh=spatialNonSpatialDistWeights, dthresh=geodisthreshold, proj4string=original_proj4string, clustnum=targetclusternum, useCentroidDist=useCentroidDist)
-}
-
-f_visualize <- function() {
-  # render clusters in colors on the original polygons 
-  rlt <- readOGR(dsn="./outputs",layer="tmpRlt_bak",encoding="utf8")
-  clusterIds = as.numeric(levels(factor(rlt@data$wardclut)))
-  isFirstPlotApplied = FALSE
-  color = 2
-  for(cid in clusterIds){
-    filter = rlt@data$wardclut == cid
-    if(isFirstPlotApplied==FALSE){
-      isFirstPlotApplied = TRUE
-      plot(rlt[filter,], col=color)
-    } else {
-      plot(rlt[filter,], add=TRUE, col=color)
-    }
-    color = color + 1
-  }
-  
-  # render clusters in colors on the merged polygons 
-  rltMerged <- readOGR(dsn="./outputs",layer="tmpRlt",encoding="utf8")
-  clusterIds = as.numeric(levels(factor(rltMerged@data$wardclut)))
-  isFirstPlotApplied = FALSE
-  color = 2
-  for(cid in clusterIds){
-    filter = rltMerged@data$wardclut == cid
-    if(isFirstPlotApplied==FALSE){
-      isFirstPlotApplied = TRUE
-      plot(rltMerged[filter,], col=color)
-    } else {
-      plot(rltMerged[filter,], add=TRUE, col=color)
-    }
-    color = color + 1
-  }
+  f_wards(adata=gAttrData, pdata=gPolyData, ianmwh=nmwt, snswh=spatialNonSpatialDistWeights, dthresh=geodisthreshold, proj4string=gOriginalProj4string, clustnum=targetclusternum, useCentroidDist=useCentroidDist)
 }
 
 f_run()
