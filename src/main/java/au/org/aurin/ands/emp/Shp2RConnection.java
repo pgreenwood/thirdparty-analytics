@@ -69,18 +69,23 @@ import org.geotools.styling.StyleBuilder;
 
 public class Shp2RConnection {
 
-  @In
+	@In
 	public String shpUrl;
-  @Out
+	public String rWorkingDir;
+	@Out
 	public RConnection c;
 
 	@Execute
 	public void exec() throws RserveException{
 		try {
-			System.out.println("=========+++"+this.shpUrl);
+			this.rWorkingDir = this.getClass().getClassLoader().getResource("outputs").getPath();
+			System.out.println(this.rWorkingDir);
+			
 			this.c = new RConnection();
 			this.c.assign("script", LoadRScript.getShpParsingScript());
 			this.c.assign("shpUrl", new REXPString(this.shpUrl));
+			this.c.assign("rWorkingDir", new REXPString(this.rWorkingDir));
+			
 			this.c.eval("try(eval(parse(text=script)),silent=FALSE)");
 			
 		} catch (IOException e) {

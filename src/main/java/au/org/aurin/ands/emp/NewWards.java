@@ -98,25 +98,11 @@ public class NewWards {
 	 * {@link String} Input String for interested column names
 	 */
 	
-	@Description("Input Vector for interested column names")
-	@In
-	public String[] interestedColNames;
-	/**
-	 * {@link String} Input Vector for interested column names
-	 */
-	
 	@Description("Input String for interested column weights")
 	@In
 	public String interestedColWeightsString;
 	/**
 	 * {@link String} Input String for interested column weights
-	 */
-
-	@Description("Input Vector for interested column weights")
-	@In
-	public double[] interestedColWeights;
-	/**
-	 * {@link double} Input Vector for interested column weights
 	 */
 
 	@Description("Input String for display column names string")
@@ -126,11 +112,11 @@ public class NewWards {
 	 * {@link String} Input String for display column names string
 	 */
 	
-	@Description("Input Vector for display column names")
+	@Description("igore data row if job numbers in all interested columns are less than this value.")
 	@In
-	public String[] displayColNames;
+	public double ignoreEmptyRowJobNum = 10;
 	/**
-	 * {@link String} Input Vector for display column names
+	 * {@link double} igore data row if job numbers in all interested columns are less than this value
 	 */
 	
 	@Description("Input String for spatial and non-spatial distance weights")
@@ -138,13 +124,6 @@ public class NewWards {
 	public String spatialNonSpatialDistWeightsString;
 	/**
 	 * {@link String} Input String for spatial and non-spatial distance weights
-	 */
-	
-	@Description("Input Vector for spatial and non-spatial distance weights")
-	@In
-	public double[] spatialNonSpatialDistWeights;
-	/**
-	 * {@link double} Input Vector for spatial and non-spatial distance weights
 	 */
 	
 	@Description("REXP result complex object")
@@ -158,6 +137,7 @@ public class NewWards {
 	@Description("shp file path of tmp result")
 	@Out
 	public String tmpResultPath;
+	public RConnection cOut;
 	
 	@Execute
 	public void compute() {
@@ -171,23 +151,46 @@ public class NewWards {
 				e.printStackTrace();
 			}
 
+
 			// 2. setup the inputs
 			this.c.assign("geodisthreshold", new REXPInteger(this.geodisthreshold));
 			this.c.assign("targetclusternum", new REXPInteger(this.targetclusternum));
-			this.c.assign("displayColNames", new REXPString(this.displayColNames));
-			this.c.assign("interestedColNames", new REXPString(this.interestedColNames));
-			this.c.assign("interestedColWeights", new REXPDouble(this.interestedColWeights));
-			this.c.assign("spatialNonSpatialDistWeights", new REXPDouble(this.spatialNonSpatialDistWeights));
+			this.c.assign("displayColNames", new REXPString(this.interestedColNamesString.split(",")));
+			this.c.assign("interestedColNames", new REXPString(this.interestedColNamesString.split(",")));
+			
+			double[] interestedColWeights = {};
+			try {
+				interestedColWeights = this.convertStringArraytoDoubleArray(this.interestedColWeightsString.split(","));
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				}
+			
+			this.c.assign("interestedColWeights", new REXPDouble(interestedColWeights));
+			
+			double[] spatialNonSpatialDistWeights = {0.5, 0.5};
+			try {
+				spatialNonSpatialDistWeights = this.convertStringArraytoDoubleArray(this.spatialNonSpatialDistWeightsString.split(","));
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			this.c.assign("spatialNonSpatialDistWeights", new REXPDouble(spatialNonSpatialDistWeights));
+			this.c.assign("gIgnoreEmptyRowJobNum", new REXPDouble(this.ignoreEmptyRowJobNum));
 
 			// 3. call the function defined in the script
-			this.worker = c.eval("try(eval(parse(text=script)),silent=FALSE)");
+			//this.worker = c.eval("try(eval(parse(text=script)),silent=FALSE)");
+			this.c.eval("try(eval(parse(text=script)),silent=FALSE)");
+			this.cOut = this.c;
+			return;
 			
-			if(worker == null){ 
-				System.out.println("worker init failed");
-				return;}
+			//if(worker == null){ 
+			//	System.out.println("worker init failed");
+			//	return;}
 						
 			// 4. setup the output results
-			this.setupOutputs();
+			//this.setupOutputs();
 			
 
 		} catch (REngineException e) {
@@ -195,7 +198,18 @@ public class NewWards {
 		}
 		
 	}
-
+	
+	private double[] convertStringArraytoDoubleArray(String[] sarray) throws NumberFormatException {
+		if (sarray != null) {
+		double rltarray[] = new double[sarray.length];
+		for (int i = 0; i < sarray.length; i++) {
+			rltarray[i] = Double.parseDouble(sarray[i]);
+		}
+			return rltarray;
+		}
+			return null;
+		}
+	
 	private void setupOutputs() {
 
 		RList resultL = null;
