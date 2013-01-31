@@ -236,7 +236,7 @@ f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string
       break
     }
     
-    print(sprintf("merging, %d ploygons remain",CUR_POLYGON_NUM))
+    print(sprintf("merging, %d polygons remain",CUR_POLYGON_NUM))
     
     # make a workable copy of dist_mat in each loop
     filtered_dist_mat = dist_mat
