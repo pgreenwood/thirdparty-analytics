@@ -43,10 +43,9 @@ import au.edu.uq.statistics.WinsorA;
 public class LoadRScript {
 
 	private static String[] rScriptResource = {
-		"/shpparsing.r",
-		"/wards_v2.2.r",
-		"/outputparsing.r"
-			
+		"/geoJSON2DataFrame.r",
+		"/wardsClustering.r",
+		"/dataFrame2JSON.r"
 	};
 	
 	private static String[] rScript;
@@ -67,12 +66,12 @@ public class LoadRScript {
 		return getScripts()[1];
 	}
 	
-	public static String getShpParsingScript() throws IOException {
+	public static String getGeoJSON2DataFrameScript() throws IOException {
 
 		return getScripts()[0];
 	}
 
-	public static String getOutParsingScript() throws IOException {
+	public static String getDataFrame2JSONScript() throws IOException {
 
 		return getScripts()[2];
 	}
