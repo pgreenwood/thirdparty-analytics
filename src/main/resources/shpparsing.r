@@ -7,11 +7,11 @@ library(PBSmapping) # for GIS_like geospatial object manipulation / anslysis inc
 gpclibPermit()
 require(gpclib)
 
-#set up the working directory
-#setwd("/Users/Shared/Documents/AURIN/R")
+
 CONST_projected_proj4string = "+proj=merc +datum=WGS84"
-testData = NULL
-testPolyList = NULL
+gAttrData = NULL
+gPolyData = NULL
+gOriginalProj4string = ""
 
 f_shpparsing <- function(){
   print(sprintf("======== shpURL :%s", shpUrl))
@@ -21,7 +21,7 @@ f_shpparsing <- function(){
   
   x <- readShapePoly(shpUrl)
   attr(x@proj4string,"projargs") = "+proj=longlat +ellps=GRS80 +no_defs"
-  original_proj4string = attr(x@proj4string,"projargs")
+  gOriginalProj4string <<- attr(x@proj4string,"projargs")
   
   # check if the original data is projected
   # Transform the polygons (which were read in as unprojected geographic coordinates) to an Albers Equal Area projection
@@ -33,13 +33,9 @@ f_shpparsing <- function(){
     x_pj = spTransform(x,CRS(CONST_projected_proj4string))
   }
   
-  
-  DATA_ROW_NUM = nrow(x_pj@data)
-  displayColNames = c("LGA_CODE", "LGA", "ZONE_CODE", "X2310", "X2412", "X8500")
-  testData <<- x_pj@data[1:DATA_ROW_NUM, displayColNames]
-  testData[,"wardclut"] = 1:DATA_ROW_NUM
-  testPolyList <<- x_pj@polygons[1:DATA_ROW_NUM]
-  print(sprintf("=====================load data rows:%i", nrow(testData)))
+  gAttrData <<- x_pj@data
+  gPolyData <<- x_pj@polygons
+  #print(sprintf("=====================load data rows:%i", nrow(gAttrData)))
 }
 
 f_shpparsing()

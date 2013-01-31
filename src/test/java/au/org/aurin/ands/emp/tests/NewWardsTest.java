@@ -52,8 +52,8 @@ public class NewWardsTest {
 		
 		System.out.println("========= Test case NewWards");
 		Shp2RConnection shp2R = new Shp2RConnection();
-		String path  = this.getClass().getClassLoader().getResource("outputs").getPath();
-		String shapeName = "tmpRlt";
+		String path  = this.getClass().getClassLoader().getResource("data").getPath();
+		String shapeName = "ABS_data_by_DZN/DZN/SplitPoly_X_Employment_fullcode";
 		path += "/" + shapeName;
 		shp2R.shpUrl = path;
 		shp2R.exec();
@@ -61,14 +61,46 @@ public class NewWardsTest {
 		NewWards wc = new NewWards();
 		//wc.c = new RConnection();
 		wc.c = shp2R.c;
-		wc.geodisthreshold = 50;
-		wc.interestedColNames = new String[3];
-		wc.interestedColNames[0] = "X2310";
-		wc.interestedColNames[1] = "X2412";
-		wc.interestedColNames[2] = "X8500";
+		
+		wc.geodisthreshold = 20;
+		
+		wc.targetclusternum = 1;
+		
+		wc.interestedColNamesString = "C000,X2412,X8500";
+		wc.interestedColNames = wc.interestedColNamesString.split(",");
+
+		wc.displayColNamesString = "LGA_CODE,LGA,ZONE_CODE,C000,X2412,X8500";
+		wc.displayColNames = wc.displayColNamesString.split(",");
+		
+		wc.interestedColWeightsString = "0.333,0.333,0.333";
+		try {
+			wc.interestedColWeights = this.convertStringArraytoDoubleArray(wc.interestedColWeightsString.split(","));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			}
+		
+		wc.spatialNonSpatialDistWeightsString = "0.5,0.5";
+		
+		try {
+			wc.spatialNonSpatialDistWeights = this.convertStringArraytoDoubleArray(wc.spatialNonSpatialDistWeightsString.split(","));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		wc.compute();
 
 	}
-
+	
+	public double[] convertStringArraytoDoubleArray(String[] sarray) throws Exception {
+		if (sarray != null) {
+		double rltarray[] = new double[sarray.length];
+		for (int i = 0; i < sarray.length; i++) {
+			rltarray[i] = Double.parseDouble(sarray[i]);
+		}
+			return rltarray;
+		}
+			return null;
+		}
 }

@@ -16,7 +16,7 @@ GLOBAL_polygon_id_prefix = "ANDS_M_"
 GLOBAL_polygon_id_counter  = 1
 
 #set up the working directory
-setwd("/Users/Shared/Documents/AURIN/R")
+setwd("/Users/philipgreenwood/gitRepositories/thirdparty-analytics/src/main/resources")
 
 gShowDebugInfo = TRUE
 debugPrint <- function(str){
@@ -406,60 +406,30 @@ f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string
   return(as.list.data.frame(adata))
 }
 
-f_test <- function(num=20, geodisthreshold = 1000, targetclusternum = 1, useCentroidDist = TRUE){
-  x <- readOGR(dsn="./data/shapefiles/testdata",layer="dissolved_20",encoding="utf8")
+f_run <- function(useCentroidDist = TRUE, ignoreEmptyRow = TRUE){
   
-  original_proj4string = attr(x@proj4string,"projargs")
-  
-  # check if the original data is projected
-  # Transform the polygons (which were read in as unprojected geographic coordinates) to an Albers Equal Area projection
-  # this is essential since we need calculate distance/area for polygons
-  if (is.projected(x)){
-    x_pj = x
-  } else
-  {
-    x_pj = spTransform(x,CRS(CONST_projected_proj4string))
+  if (length(displayColNames) > 0){
+    gAttrData <<- gAttrData[, displayColNames]
   }
   
-  TEST_DATA_ROW_NUM = num
-  
-  testData = x_pj@data[1:TEST_DATA_ROW_NUM,]
-  testPolyList = x_pj@polygons[1:TEST_DATA_ROW_NUM]
-  nmwt=data.frame(cbind(ATTR_NAME=c("Morans_I","attr1","attr2"), ATTR_WEIGHT=c(0.9,0.05,0.05)))
-  
-  f_wards(adata=testData, pdata=testPolyList, ianmwh=nmwt, snswh=c(0.5,0.5), dthresh=geodisthreshold, proj4string=original_proj4string, clustnum=targetclusternum, useCentroidDist=useCentroidDist)
-}
-
-f_run <- function(num = -1, 
-                  geodisthreshold = 20, 
-                  targetclusternum = 1, 
-                  useCentroidDist = TRUE,
-                  displayColNames = c("LGA_CODE", "LGA", "ZONE_CODE", "X2310", "X2412", "X8500"),
-                  
-                  interestedColWeights = c(0.333, 0.333, 0.333),
-                  spatialNonSpatialDistWeights = c(0.5, 0.5),
-                  ignoreEmptyRow = TRUE
-                  ){
-  # interestedColNames = c("X2310", "X2412", "X8500"),
-  #x <- readOGR(dsn="./outputs",layer="SplitPoly_X_Employment",encoding="utf8")
-  #original_proj4string = attr(x@proj4string,"projargs")
-  print(sprintf("================== dummy parameter %i", dummyone))
-  print(interestedColNames)
-  # use fast read mode
-  
+  gAttrData[,"wardclut"] = 1:nrow(gAttrData)
+     
   # ignore rows if all interested column values are 0
   if (ignoreEmptyRow==TRUE){
-    filter = rep(FALSE, nrow(testData))
+    filter = rep(FALSE, nrow(gAttrData))
     for(colname in interestedColNames){
-      filter = filter | (testData[,colname] > 0)
+      filter = filter | (gAttrData[,colname] > 0)
     }
-    testData = testData[filter,]
-    testPolyList = testPolyList[filter]
+    gAttrData = gAttrData[filter,]
+    gPolyData = gPolyData[filter]
   }
+  
+  print(sprintf("=== rows :%i", nrow(gAttrData)))
+  
   
   nmwt=data.frame(cbind(ATTR_NAME=interestedColNames, ATTR_WEIGHT=interestedColWeights))
   
-  f_wards(adata=testData, pdata=testPolyList, ianmwh=nmwt, snswh=spatialNonSpatialDistWeights, dthresh=geodisthreshold, proj4string=original_proj4string, clustnum=targetclusternum, useCentroidDist=useCentroidDist)
+  f_wards(adata=gAttrData, pdata=gPolyData, ianmwh=nmwt, snswh=spatialNonSpatialDistWeights, dthresh=geodisthreshold, proj4string=gOriginalProj4string, clustnum=targetclusternum, useCentroidDist=useCentroidDist)
 }
 
 f_visualize <- function() {
@@ -496,9 +466,4 @@ f_visualize <- function() {
   }
 }
 
-f_runAuto <- function(geodisthreshold=20){
-  f_run(geodisthreshold=geodisthreshold)
-}
-
-#f_runAuto(geodisthreshold)
 f_run()
