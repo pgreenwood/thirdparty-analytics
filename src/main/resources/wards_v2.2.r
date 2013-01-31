@@ -239,7 +239,7 @@ f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string
       break
     }
     
-    print(sprintf("merging, %d plogyons remain",CUR_POLYGON_NUM))
+    print(sprintf("merging, %d ploygons remain",CUR_POLYGON_NUM))
     
     # make a workable copy of dist_mat in each loop
     filtered_dist_mat = dist_mat
@@ -402,8 +402,8 @@ f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string
   print(sprintf("=== all done (in %.2f seconds) ===", as.numeric(algEndTime-algStartTime, units="secs")))
   
   # put result into gRltList
-  gRltList[[1]] <<- newDataFrame_bak
-  gRltList[[2]] <<- newDataFrame@data
+  gRltList[[1]] <<- newDataFrame_pj_bak
+  gRltList[[2]] <<- newDataFrame_pj@data
   
 }
 
