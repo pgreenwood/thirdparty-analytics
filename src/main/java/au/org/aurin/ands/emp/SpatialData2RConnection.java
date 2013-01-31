@@ -82,7 +82,7 @@ public class SpatialData2RConnection {
 			System.out.println(this.rWorkingDir);
 			
 			this.c = new RConnection();
-			this.c.assign("script", LoadRScript.getShpParsingScript());
+			this.c.assign("script", LoadRScript.getGeoJSON2DataFrameScript());
 			this.c.assign("shpUrl", new REXPString(this.shpUrl));
 			this.c.assign("rWorkingDir", new REXPString(this.rWorkingDir));
 			

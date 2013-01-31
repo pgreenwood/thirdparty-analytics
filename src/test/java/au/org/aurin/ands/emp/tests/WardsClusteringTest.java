@@ -20,6 +20,9 @@ import org.rosuda.REngine.Rserve.RserveException;
 
 import au.edu.uq.preload.Rserve;
 import au.org.aurin.ands.emp.WardsClustering;
+import au.org.aurin.ands.emp.SpatialData2RConnection;
+import au.org.aurin.ands.emp.DataFrame2JSON;
+
 
 public class WardsClusteringTest {
 
@@ -44,47 +47,37 @@ public class WardsClusteringTest {
 					+ "to shut it down if the process is owned by a different user");
 		}
 	}
-	/*
-	public REXP dataGenerator() {
-
-		REXP data = null;
-
-		double[] d1 = new double[] { 1.1, 2.2, 3.3, 11.1, 22.2, 33.3 }; // col1
-		double[] d2 = new double[] { 10.0, 20.0, 30.0, 40.0, 50.0, 60.0 }; // col2
-		double[] d3 = new double[] { 100.0, 200.0, 300.0, 400.0, 500.0, 600.0 }; // col1
-//		double[] d4 = new double[] { 100.1, 200.2, 300.3, 1100.1, 2200.2, 33000.3 }; // col2
-		double[] d4 = new double[] { 100.1, 200.2, 300.3, 110.1, 220.2, 3300.3 }; // col2
-		 
-		List<double[]> dataL = new ArrayList<double[]>();
-		dataL.add(d1);
-		dataL.add(d2);
-		dataL.add(d3);
-		dataL.add(d4);
-
-		RList a = new RList();
-		// add each column separately
-		a.put("iCol1", new REXPDouble(dataL.get(0)));
-		a.put("iCol2", new REXPDouble(dataL.get(1)));
-		
-		a.put("dCol1", new REXPDouble(dataL.get(2)));
-		a.put("dCol2", new REXPDouble(dataL.get(3)));
-
-		try {
-			data = REXP.createDataFrame(a);
-		} catch (REXPMismatchException e) {
-			e.printStackTrace();
-		}
-
-		return data;
-	}
-	*/
+	
 	@Test
 	public void test() throws RserveException {
-		System.out.println("Test case WardsClustering");
 		
-		//WardsClustering wc = new WardsClustering();
-		//wc.c = new RConnection();
-		//wc.compute();
+		System.out.println("========= Test case NewWards");
+		SpatialData2RConnection shp2R = new SpatialData2RConnection();
+		String path  = this.getClass().getClassLoader().getResource("data/ABS_data_by_DZN/DZN").getPath();
+		path += "/" + "SplitPoly_X_Employment_fullcode";
+		
+		shp2R.shpUrl = path;	
+		System.out.println(path);
+		
+		shp2R.exec();
+		
+		WardsClustering wc = new WardsClustering();
+
+		wc.c = shp2R.c;
+		
+		wc.geodisthreshold = 10;
+		wc.targetclusternum = 1;
+		wc.interestedColNamesString = "X2310,X2412,X8500";
+		wc.displayColNamesString = "LGA_CODE,LGA,ZONE_CODE,X2310,X2412,X8500";
+		wc.interestedColWeightsString = "0.333,0.333,0.333";
+		wc.spatialNonSpatialDistWeightsString = "0.9,0.1";
+		wc.ignoreEmptyRowJobNum = 10;
+		
+		wc.compute();
+		
+		DataFrame2JSON op= new DataFrame2JSON();
+		op.c = wc.cOut;
+		op.exec();
 
 	}
 

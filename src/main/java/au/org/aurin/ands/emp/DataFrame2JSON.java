@@ -68,7 +68,7 @@ import org.geotools.styling.Style;
 import org.geotools.styling.StyleBuilder;
 
 
-public class OutputParsing {
+public class DataFrame2JSON {
 	@In
 	public RConnection c;
 	
@@ -80,7 +80,7 @@ public class OutputParsing {
 	public void exec() throws RserveException{
 		try {
 		
-			this.c.assign("script", LoadRScript.getOutParsingScript());
+			this.c.assign("script", LoadRScript.getDataFrame2JSONScript());
 			this.worker = this.c.eval("try(eval(parse(text=script)),silent=FALSE)");
 			
 			if(this.worker == null){
