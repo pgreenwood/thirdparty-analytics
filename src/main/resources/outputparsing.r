@@ -1,8 +1,9 @@
-library(maptools)   # for geospatial services; also loads foreign and sp
-library(rgdal)      # for map projection work; also loads sp
-library(rgeos)
-library(gdata)
-library(RJSONIO)
+# required packages are preloaded and defined here:/Library/Frameworks/R.framework/Versions/2.15/Resources/library/base/R/Rprofile
+#library(maptools)   # for geospatial services; also loads foreign and sp
+#library(rgdal)      # for map projection work; also loads sp
+#library(rgeos)
+#library(gdata)
+#library(RJSONIO)
 
 f_outputparsing <- function(){
   if(length(gRltList) == 0) return
