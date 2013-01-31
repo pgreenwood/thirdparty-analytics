@@ -76,6 +76,7 @@ public class OutputParsing {
 	@Out
 	public REXP worker;
 	
+	@Execute
 	public void exec() throws RserveException{
 		try {
 		

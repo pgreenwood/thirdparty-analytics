@@ -20,7 +20,7 @@ import org.rosuda.REngine.Rserve.RserveException;
 
 import au.edu.uq.preload.Rserve;
 import au.org.aurin.ands.emp.NewWards;
-import au.org.aurin.ands.emp.Shp2RConnection;
+import au.org.aurin.ands.emp.SpatialData2RConnection;
 import au.org.aurin.ands.emp.OutputParsing;
 
 
@@ -52,7 +52,7 @@ public class NewWardsTest {
 	public void test() throws RserveException {
 		
 		System.out.println("========= Test case NewWards");
-		Shp2RConnection shp2R = new Shp2RConnection();
+		SpatialData2RConnection shp2R = new SpatialData2RConnection();
 		String path  = this.getClass().getClassLoader().getResource("data/ABS_data_by_DZN/DZN").getPath();
 		path += "/" + "SplitPoly_X_Employment_fullcode";
 		
