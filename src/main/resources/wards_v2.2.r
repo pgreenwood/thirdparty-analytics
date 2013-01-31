@@ -11,6 +11,13 @@ gpclibPermit()
 require(gpclib)
 
 CONST_projected_proj4string = "+proj=merc +datum=WGS84"
+# the output projection string is EPSG4283, which can be obtained this way:
+# EPSG = make_EPSG()
+# filter = EPSG[,"code"]=="4283"
+# filter[which(is.na(filter))] = FALSE
+# projstring = EPSG[filter,"prj4"]
+CONST_EPSG4283_proj4string = "+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs"
+
 CONST_na_nsp_distance = 0.5
 GLOBAL_polygon_id_prefix = "ANDS_M_"
 GLOBAL_polygon_id_counter  = 1
@@ -375,13 +382,13 @@ f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string
   sp = SpatialPolygons(pdata)
   sp@proj4string = CRS(CONST_projected_proj4string)
   newDataFrame = SpatialPolygonsDataFrame(sp,data=adata, match.ID = FALSE)
-  newDataFrame_pj = spTransform(newDataFrame,CRS(proj4string))
+  newDataFrame_pj = spTransform(newDataFrame,CRS(CONST_EPSG4283_proj4string))
   
   # save a new copy of origial polygons with updated cluseter information
   sp_bak =SpatialPolygons(pdata_bak)
   sp_bak@proj4string = CRS(CONST_projected_proj4string)
   newDataFrame_bak = SpatialPolygonsDataFrame(sp_bak,data=adata_bak, match.ID = FALSE)
-  newDataFrame_pj_bak = spTransform(newDataFrame_bak,CRS(proj4string))
+  newDataFrame_pj_bak = spTransform(newDataFrame_bak,CRS(CONST_EPSG4283_proj4string))
   
   #plot(newDataFrame_pj_bak)
   #plot(newDataFrame_pj)
