@@ -7,13 +7,6 @@
 
 f_outputparsing <- function(){
   
-  if (gErrorOccurs){
-  	print("=====================")
-  	print(gErrorDescription)
-  	print("=====================")
-  	return(list())
-	}
-  
   if(length(gRltList) == 0) return(list())
   
   # return a list containing elements in geojson/json format
