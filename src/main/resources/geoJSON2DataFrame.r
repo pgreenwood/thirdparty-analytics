@@ -13,12 +13,35 @@ gAttrData = NULL
 gPolyData = NULL
 gRltList = list()
 gOriginalProj4string = ""
-gIgnoreEmptyRowJobNum = 10
+gIgnoreEmptyRowJobNum = 1
+gVcMode = TRUE
+gErrorOccurs = FALSE
+gErrorDescription = ""
 
-f_shpparsing <- function(){
-  #print(sprintf("======== shpURL :%s", shpUrl))
-  x <- readShapePoly(shpUrl)
-  attr(x@proj4string,"projargs") = "+proj=longlat +ellps=GRS80 +no_defs"
+f_spatialDataParsing <- function(){
+  
+  gErrorOccurs <<- FALSE
+  gErrorDescription <<- ""
+  
+  setScale(1e+10)
+  
+  if(spatialDataFormatMode==0 & nchar(shpUrl)>0) {
+  	print("load data from local shape file ...")
+  	x <- readShapePoly(shpUrl)
+  	attr(x@proj4string,"projargs") = "+proj=longlat +ellps=GRS80 +no_defs"
+  	
+  } else if(spatialDataFormatMode==1 & nchar(geoJSONFilePath)>0){
+  
+    print("load data from local geojson file ...")
+  	x<-readOGR(dsn=geoJSONFilePath, layer = 'OGRGeoJSON')
+  	
+  } else if(spatialDataFormatMode==2 & nchar(geoJSONString)>0){
+  	
+  	print("load data from geojson string ...")
+  	x<-readOGR(dsn=geoJSONString, layer = 'OGRGeoJSON')
+ 
+  }
+  
   gOriginalProj4string <<- attr(x@proj4string,"projargs")
   
   # check if the original data is projected
@@ -36,4 +59,4 @@ f_shpparsing <- function(){
   #print(sprintf("=====================load data rows:%i", nrow(gAttrData)))
 }
 
-f_shpparsing()
+f_spatialDataParsing()
