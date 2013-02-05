@@ -70,8 +70,19 @@ import org.geotools.styling.StyleBuilder;
 public class SpatialData2RConnection {
 
 	@In
-	public String shpUrl;
+	public String shpUrl = "";
+	@In
+	public String geoJSONFilePath = "";
+	@In
+	public String geojSONString = "";
+	
+	@Description("different ways to pass spatial data into data frame: 0: use shapefile, 1: use geojson file, 2: use geojson string")
+	@In
+	public int spatialDataFormatMode = 0;
+	
+	@In
 	public String rWorkingDir;
+	
 	@Out
 	public RConnection c;
 	
@@ -84,6 +95,10 @@ public class SpatialData2RConnection {
 			this.c = new RConnection();
 			this.c.assign("script", LoadRScript.getGeoJSON2DataFrameScript());
 			this.c.assign("shpUrl", new REXPString(this.shpUrl));
+			this.c.assign("geoJSONFilePath", new REXPString(this.geoJSONFilePath));
+			this.c.assign("geojSONString", new REXPString(this.geojSONString));
+			this.c.assign("spatialDataFormatMode", new REXPInteger(this.spatialDataFormatMode));
+
 			this.c.assign("rWorkingDir", new REXPString(this.rWorkingDir));
 			
 			this.c.eval("try(eval(parse(text=script)),silent=FALSE)");
