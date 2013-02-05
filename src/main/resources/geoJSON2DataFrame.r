@@ -15,13 +15,13 @@ gRltList = list()
 gOriginalProj4string = ""
 gIgnoreEmptyRowJobNum = 1
 gVcMode = TRUE
-gErrorOccurs = FALSE
-gErrorDescription = ""
+gErrorOccurs <<- FALSE
+gErrorDescription <<- "you are "
 
 f_spatialDataParsing <- function(){
   
   gErrorOccurs <<- FALSE
-  gErrorDescription <<- ""
+  gErrorDescription <<- "qwqwqwqwq"
   
   setScale(1e+10)
   
