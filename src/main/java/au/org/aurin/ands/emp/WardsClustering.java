@@ -28,6 +28,7 @@ import org.rosuda.REngine.REXPInteger;
 import org.rosuda.REngine.REXPVector;
 import org.rosuda.REngine.REXPString;
 import org.rosuda.REngine.REXPDouble;
+import org.rosuda.REngine.REXPLogical;
 
 
 import au.edu.uq.interfaces.Statistics;
@@ -119,6 +120,13 @@ public class WardsClustering {
 	 * {@link double} igore data row if job numbers in all interested columns are less than this value
 	 */
 	
+	@Description("perform clustering using value chain mode or not. if true, the interested columns will be added up into a new column called 'vcvalue', on which, the non-spatial distance will be computed and used as a factor to generate the final clustering result")
+	@In
+	public boolean vcmode = true;
+	/**
+	 * {@link boolean} perform clustering using value chain mode or not. if true, the interested columns will be added up into a new column called 'vcvalue', on which, the non-spatial distance will be computed and used as a factor to generate the final clustering resul
+	 */
+	
 	@Description("Input String for spatial and non-spatial distance weights")
 	@In
 	public String spatialNonSpatialDistWeightsString;
@@ -181,6 +189,7 @@ public class WardsClustering {
 			
 			this.c.assign("spatialNonSpatialDistWeights", new REXPDouble(spatialNonSpatialDistWeights));
 			this.c.assign("gIgnoreEmptyRowJobNum", new REXPDouble(this.ignoreEmptyRowJobNum));
+			this.c.assign("gVcMode", new REXPLogical(this.vcmode));
 
 			// 3. call the function defined in the script
 			//this.worker = c.eval("try(eval(parse(text=script)),silent=FALSE)");
@@ -234,59 +243,7 @@ public class WardsClustering {
 					}
 
 					System.out.println("========= test end =========");
-					//this.tmpResultPath = resultL.at(resultL.size() - 1).asList()
-					//this.tmpResultPath = resultL.at(resultL.size() - 1).asList().at("JSON").asString();
-					//System.out.println("JSON R-RESULT = " + this.tmpResultPath);
 					
-					//parse result to geojson
-//					URL shpUrl = getClass().getResource("/outputs/tmpRlt.shp");
-//				    
-//					//File file = new File("/Users/yiqunc/githubRepositories/thirdparty-analytics/src/main/resources/outputs/newDataFrames.shp");				
-//					if(shpUrl != null)
-//					{
-//						File file = new File(shpUrl.getFile());
-//					try {
-//						System.out.println("shp file feature JSON =======1");
-//						FileDataStore store = FileDataStoreFinder.getDataStore(file);
-//						System.out.println("shp file feature JSON =======2");
-//						SimpleFeatureSource featureSource = store.getFeatureSource();
-//						System.out.println("shp file feature JSON =======3");
-//						//SimpleFeatureCollection simpleFeatureCollection = featureSource.getFeatures();	
-//						//FeatureJSON fjson = new FeatureJSON();	
-//						//String rltString =  fjson.toString(simpleFeatureCollection);
-//						//System.out.println("shp file feature JSON  = " + rltString);						
-//					}catch (Exception e)
-//					{
-//						e.printStackTrace();
-//					}
-//					}
-//					else
-//					{
-//						System.out.println("not found =======");
-//						
-//					}
-					
-					/*
-					 * JSONObject jsonInputs; JSON objInputs =
-					 * JSONSerializer.toJSON(resultL.at(0) .asList());
-					 * System.out.println("jsonInput object = " + "\n" +
-					 * objInputs.toString()); JSONObject joInputs =
-					 * JSONObject.fromObject(objInputs); System.out .println(
-					 * "json INPUT conversion from String to JAVA JSON OBJECT: "
-					 * + "\n" + joInputs.toString());
-					 */
-//					JSONObject jsonOutputs;
-//					JSON objOutputs = JSONSerializer.toJSON(resultL
-//							.at(resultL.size() - 1).asList().at("JSON")
-//							.asString());
-//					System.out.println("jsonOutput object from R = " + "\n"
-//							+ objOutputs.toString());
-//					this.jsonResult = new String(objOutputs.toString());
-//
-//					JSONArray joOutputs = JSONArray.fromObject(objOutputs);
-//					System.out
-//							.println("json OUTPUT conversion from String to JAVA JSON OBJECT: "
-//									+ "\n" + joOutputs.toString());
 				}
 			}
 		} catch (REXPMismatchException me) {

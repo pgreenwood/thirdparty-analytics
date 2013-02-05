@@ -52,27 +52,30 @@ public class WardsClusteringTest {
 	public void test() throws RserveException {
 		
 		System.out.println("========= Test case NewWards");
-		SpatialData2RConnection shp2R = new SpatialData2RConnection();
+		SpatialData2RConnection sd2R = new SpatialData2RConnection();
 		String path  = this.getClass().getClassLoader().getResource("data/ABS_data_by_DZN/DZN").getPath();
-		path += "/" + "SplitPoly_X_Employment_fullcode";
+		path += "/" + "smalldata";
 		
-		shp2R.shpUrl = path;	
+		sd2R.shpUrl = path;	
+		sd2R.geoJSONFilePath = path + ".geojson";
+		sd2R.spatialDataFormatMode = 1;
+		
 		System.out.println(path);
 		
-		shp2R.exec();
+		sd2R.exec();
 		
 		WardsClustering wc = new WardsClustering();
 
-		wc.c = shp2R.c;
+		wc.c = sd2R.c;
 		
 		wc.geodisthreshold = 10;
 		wc.targetclusternum = 1;
 		wc.interestedColNamesString = "X2310,X2412,X8500";
-		wc.displayColNamesString = "LGA_CODE,LGA,ZONE_CODE,X2310,X2412,X8500";
+		wc.displayColNamesString = "LGA_CODE,LGA,ZONE_CODE";
 		wc.interestedColWeightsString = "0.333,0.333,0.333";
 		wc.spatialNonSpatialDistWeightsString = "0.9,0.1";
 		wc.ignoreEmptyRowJobNum = 10;
-		
+		wc.vcmode = true;
 		wc.compute();
 		
 		DataFrame2JSON op= new DataFrame2JSON();

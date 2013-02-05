@@ -75,8 +75,7 @@ f_norm <- function(vec, na.rep.auto = FALSE, na.rep = NA){
   # if max == min, set normalized value to 1 for all vector elements
   if (v_max == v_min){
     rtn = vec - v_min + 1
-  } else
-  {
+  } else {
     # do the normalization
     rtn = (vec - v_min)/(v_max - v_min)
   }
@@ -85,7 +84,7 @@ f_norm <- function(vec, na.rep.auto = FALSE, na.rep = NA){
   if (na.rep.auto){
     if (v_max == v_min){
       na.rep = 1
-    } else{
+    } else {
       na.rep = (mean(vec[!is.na(vec)]) - v_min) / (v_max - v_min)
     }
   }
@@ -97,7 +96,7 @@ f_norm <- function(vec, na.rep.auto = FALSE, na.rep = NA){
 }
 
 # wards: applied geodistance threshold, with distance calculation process optimised
-f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string=CONST_projected_proj4string, clustnum = 1, useCentroidDist = TRUE){
+f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string=CONST_projected_proj4string, clustnum = 1, useCentroidDist = TRUE, vcmode = TRUE){
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   # do ward's clustering on spatial and non-spatial attributes.
   # input:
@@ -109,6 +108,8 @@ f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string
   # (6) proj4string: output shp file projection information, so the output can be reprojected or no-projection applied (using GCS)
   # (7) clustnum: target clustering number
   # (8) useCentroidDist: if true, use the centroid distance instead of the hausdorff distance to measure the distance between polygons. It speeds up the process enormously. 
+  # (9) vcmode: value chain mode, if true, the value (job numbers) of interested attributes (job categories) will add up (weights NOT applied) as a new column ('vcvalue') and clustering will be performed on this column. If false, clustering will be performed on all interested attributes.
+  #
   # output:
   # new shp file with a new data column marks its ward's cluster number
   #
@@ -120,27 +121,46 @@ f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string
   print(paste("=== algorithm starts at ", Sys.time(), " ==="))
   # do some inputs validation
   
-  # backup data, adata and pdata will be changed during clustering process
+  # start time
   algStartTime = Sys.time()
-  
-  # append a new column to hold the original polygon/data sequence
-  adata[,"orgIdx"] = c(1:nrow(adata))
-  adata[,"wardclut"] = c(1:nrow(adata))
-  adata_bak = adata
-  pdata_bak = pdata
   
   # assign Interested Non-Spatial Attribute Names
   IN_NS_ATTR_NAMES = as.character(ianmwh[[1]])
+  
   # assign Interested Non-Spatial Attribute Weights
   IN_NS_ATTR_WEIGHTS = as.numeric(as.character(ianmwh[[2]]))
-
+  
   # assign distance threshold
   CONST_DISTANCE_THRESHOLD = dthresh
   
+  # append a column to hold the original polygon/data sequence
+  adata[,"orgIdx"] = c(1:nrow(adata))
+  
+  # append a column to hold the ward's cluster number
+  adata[,"wardclut"] = c(1:nrow(adata))
+  
+  # append a column to hold the value chain value
+  if(vcmode==TRUE){
+    if(length(IN_NS_ATTR_NAMES)>1){
+      adata[,"vcvalue"] = rowSums(adata[,IN_NS_ATTR_NAMES])
+    } else {
+      adata[,"vcvalue"] = adata[,IN_NS_ATTR_NAMES]
+    }
+  }
+  
+  # backup data, adata and pdata will be changed during clustering process
+  adata_bak = adata
+  pdata_bak = pdata
+  
   # do the normalization on each attribute column before calculating the distance, NA will be retained in the result
   norm_ns_attrs_dataframe = adata[,IN_NS_ATTR_NAMES]
-  for(ns_attr_no in 1:ncol(norm_ns_attrs_dataframe)){
+  for(ns_attr_no in 1:length(IN_NS_ATTR_NAMES)){
     norm_ns_attrs_dataframe[[ns_attr_no]] = f_norm(norm_ns_attrs_dataframe[[ns_attr_no]])
+  }
+  
+  if(vcmode==TRUE){
+    # do the normalization on "vcvalue" column
+    norm_ns_attrs_dataframe[,"vcvalue"] = f_norm(adata[,"vcvalue"])
   }
   
   # get the current polygon numbers
@@ -159,7 +179,7 @@ f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string
   dist_mat = as.matrix(dist_dataframe) 
   dist_mat_rowcounter = 1
   
-  print(paste("initialization distance matrix starts at ", Sys.time()))
+  debugPrint(paste("initialization distance matrix starts at ", Sys.time()))
   
   # assign values to distance matrix
   for (idx_i in 1:(CUR_POLYGON_NUM-1)){
@@ -167,7 +187,7 @@ f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string
     pi = SpatialPolygons(list(pdata[[idx_i]]))
     len_pi = gLength(pi)
     
-    debugPrint(sprintf("handling p%d ",idx_i))
+    debugPrint(sprintf("handling p%d of %d",idx_i, CUR_POLYGON_NUM))
     
     for (idx_j in (idx_i+1):CUR_POLYGON_NUM){
       latlon_j = pdata[[idx_j]]@labpt
@@ -198,10 +218,15 @@ f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string
       # issue: how to handle the distance between NA attribute value(s)? A simple way is to set the distance 0 so it makes no contribution (not exactly, it actually shortens the "real" distance) to the final dPDF.
       # updates: if NA exists in any one of the calculating attributes, the resulst is NA, and will be retained in the raw dataframe
       nsp_dist = 0
-      for(ns_attr_no in 1:length(norm_ns_attrs_dataframe)){
-        nsp_dist = nsp_dist + IN_NS_ATTR_WEIGHTS[ns_attr_no]*(norm_ns_attrs_dataframe[idx_i, ns_attr_no] - norm_ns_attrs_dataframe[idx_j, ns_attr_no])^2
+      if(vcmode==TRUE){
+        nsp_dist = abs(adata[idx_i, "vcvalue"] - adata[idx_j, "vcvalue"])
+      } else {
+        for(ns_attr_no in 1:length(IN_NS_ATTR_NAMES)){
+          nsp_dist = nsp_dist + IN_NS_ATTR_WEIGHTS[ns_attr_no]*(norm_ns_attrs_dataframe[idx_i, ns_attr_no] - norm_ns_attrs_dataframe[idx_j, ns_attr_no])^2
+        }
+        nsp_dist = sqrt(nsp_dist)
       }
-      nsp_dist = sqrt(nsp_dist)
+      
       
       # update row values for dist_mat
       dist_mat[dist_mat_rowcounter,"s_dist"] = sp_dist
@@ -217,8 +242,8 @@ f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string
   filter = dist_mat[,"idx_i"] > 0
   dist_mat = dist_mat[filter, , drop=FALSE]
   
-  print(sprintf("initial dist_mat row number: %i",nrow(dist_mat)))
-  print(paste("initialization distance matrix ends at ", Sys.time()))
+  debugPrint(sprintf("initial dist_mat row number: %i",nrow(dist_mat)))
+  debugPrint(paste("initialization distance matrix ends at ", Sys.time()))
   
   # perform ward's clustering
   while(nrow(adata) > 1) #continue if more than one rows exist
@@ -236,11 +261,11 @@ f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string
       break
     }
     
-    print(sprintf("merging, %d polygons remain",CUR_POLYGON_NUM))
+    debugPrint(sprintf("merging, %d polygons remain",CUR_POLYGON_NUM))
     
     # make a workable copy of dist_mat in each loop
     filtered_dist_mat = dist_mat
-        
+    
     if (nrow(filtered_dist_mat) == 0){ # means the geodistance threshold filter out all polggon pairs, it's time to exit
       print("=== No more polgyons can be merged, exit. ===")
       break
@@ -277,19 +302,22 @@ f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string
     
     # store the newly merged polygon to Polygon_i
     pdata[idx_i_filter] = uni_pij@polygons
-        
+    
     # step2. handle the attribute data
     # merge attribute data into min_idx_i, how to handle NA should be considered
     ns_attr_no = 1
-    for(ns_attr_no in 1:length(norm_ns_attrs_dataframe)){
+    for(ns_attr_no in 1:length(IN_NS_ATTR_NAMES)){
       adata[idx_i_filter, IN_NS_ATTR_NAMES[ns_attr_no]] = adata[idx_i_filter, IN_NS_ATTR_NAMES[ns_attr_no]] +  adata[idx_j_filter, IN_NS_ATTR_NAMES[ns_attr_no]]
     }
-        
+    if(vcmode==TRUE){
+      adata[idx_i_filter,"vcvalue"] = adata[idx_i_filter,"vcvalue"] + adata[idx_j_filter,"vcvalue"]
+    }
+    
     # find the wardclust value of row min_idx_j in dataTargetYear before remove it
     wardclust_j_val = adata[idx_j_filter, "wardclut"]
     # find the wardclust value that will be used to replace wardclust_j_val in the dataTargetYear_bak
     wardclust_i_val = adata[idx_i_filter, "wardclut"]
-        
+    
     # update wardclust column in the dataTargetYear_bak
     # find all rows in dataTargetYear_bak whose wardclust value == wardclust_j_val
     tmpfilter = adata_bak[, "wardclut"] == wardclust_j_val
@@ -308,14 +336,19 @@ f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string
     # update the distance mat by removing all rows whose idx_i is min_idx_i or min_idx_j, or whose idx_j is min_idx_i or min_idx_j
     dist_mat_filter = dist_mat[,"idx_i"]!=min_idx_i & dist_mat[,"idx_i"]!=min_idx_j & dist_mat[,"idx_j"]!=min_idx_i & dist_mat[,"idx_j"]!=min_idx_j
     dist_mat = dist_mat[dist_mat_filter, , drop=FALSE]
-
-    norm_ns_attrs_dataframe = adata[IN_NS_ATTR_NAMES]
+    
+    norm_ns_attrs_dataframe = adata[,IN_NS_ATTR_NAMES, drop=FALSE]
     
     # then do the normalization, NA will be retained in the result
-    for(ns_attr_no in 1:length(norm_ns_attrs_dataframe)){
+    for(ns_attr_no in 1:length(IN_NS_ATTR_NAMES)){
       norm_ns_attrs_dataframe[[ns_attr_no]] = f_norm(norm_ns_attrs_dataframe[[ns_attr_no]])
     }
-        
+    
+    if(vcmode==TRUE){
+      # do the normalization on "vcvalue" column
+      norm_ns_attrs_dataframe[,"vcvalue"] = f_norm(adata[,"vcvalue"])
+    }
+    
     # newly created polygon
     latlon_n = pdata[idx_i_filter][[1]]@labpt
     pN = SpatialPolygons(pdata[idx_i_filter])
@@ -325,7 +358,7 @@ f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string
     pRest = pdata[!idx_i_filter]
     aRest = adata[!idx_i_filter,]
     norm_ns_attrs_dataframe_rest = norm_ns_attrs_dataframe[!idx_i_filter,]
-        
+    
     tmp_len = length(pRest)
     tmp_dist_dataframe = data.frame(cbind(s_dist=rep(0,tmp_len), ns_dist=rep(0,tmp_len), idx_i=rep(0,tmp_len), idx_j=rep(0,tmp_len)))
     tmp_dist_mat = as.matrix(tmp_dist_dataframe) 
@@ -356,11 +389,14 @@ f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string
       
       # calc non spatial distance (Euclidian distance, or we can use Manhattan distance)
       nsp_dist = 0
-      for(ns_attr_no in 1:length(norm_ns_attrs_dataframe)){
-        nsp_dist = nsp_dist + IN_NS_ATTR_WEIGHTS[ns_attr_no]*(norm_ns_attrs_dataframe[idx_i_filter, ns_attr_no] - norm_ns_attrs_dataframe_rest[rest_idx, ns_attr_no])^2
+      if(vcmode==TRUE){
+        nsp_dist = abs(norm_ns_attrs_dataframe[idx_i_filter, "vcvalue"] - norm_ns_attrs_dataframe_rest[rest_idx, "vcvalue"])
+      } else {
+        for(ns_attr_no in 1:length(IN_NS_ATTR_NAMES)){
+          nsp_dist = nsp_dist + IN_NS_ATTR_WEIGHTS[ns_attr_no]*(norm_ns_attrs_dataframe[idx_i_filter, ns_attr_no] - norm_ns_attrs_dataframe_rest[rest_idx, ns_attr_no])^2
+        }
+        nsp_dist = sqrt(nsp_dist)
       }
-      nsp_dist = sqrt(nsp_dist)
-      
       # set row values for dist_dataframe
       tmp_dist_mat[tmp_rowcounter,"s_dist"] = sp_dist
       tmp_dist_mat[tmp_rowcounter,"ns_dist"] = nsp_dist
@@ -373,11 +409,28 @@ f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string
     tmp_dist_mat = tmp_dist_mat[filter, , drop=FALSE]
     
     dist_mat = rbind(dist_mat, tmp_dist_mat)
-}
+  }
+  
+  # renumbering the cluster ID in sequence
+  orgclutIds = as.integer(levels(factor(adata[,"wardclut"])))
+  orgclutIds = sort(orgclutIds)
+  for(i in 1:length(orgclutIds)){
+    filter = adata[,"wardclut"] == orgclutIds[i]
+    adata[filter,"wardclut"] = i
+    
+    filter = adata_bak[,"wardclut"] == orgclutIds[i]
+    adata_bak[filter,"wardclut"] = i
+  }
   
   # save merged result into a tmp shp file
   sp = SpatialPolygons(pdata)
   sp@proj4string = CRS(CONST_projected_proj4string)
+  # for the merged polygons, the attribute data should only contain the job numbers and cluster number as valid information
+  if(vcmode==TRUE){
+    adata = adata[,c(IN_NS_ATTR_NAMES,"wardclut","vcvalue")]
+  } else {
+    adata = adata[,c(IN_NS_ATTR_NAMES,"wardclut")]
+  }
   newDataFrame = SpatialPolygonsDataFrame(sp,data=adata, match.ID = FALSE)
   newDataFrame_pj = spTransform(newDataFrame,CRS(CONST_EPSG4283_proj4string))
   
@@ -406,9 +459,45 @@ f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string
 
 f_run <- function(useCentroidDist = TRUE, ignoreEmptyRow = TRUE){
   
-  if (length(displayColNames) > 0){
-    gAttrData <<- gAttrData[, displayColNames]
+  # input validation
+  interestedColNames = interestedColNames[which(interestedColNames %in% colnames(gAttrData))]
+  if (is.null(interestedColNames) | length(interestedColNames)==0){
+    gErrorOccurs <<- TRUE
+    gErrorDescription <<- "R Script Err: No valid interested columns provided."
+    return(FALSE)
   }
+  
+  if (!is.numeric(interestedColWeights)){
+    gErrorOccurs <<- TRUE
+    gErrorDescription <<- "R Script Err: Weights must be numeric."
+    return(FALSE)
+  }
+  
+  if (length(interestedColWeights)!=length(interestedColNames)){
+    gErrorOccurs <<- TRUE
+    gErrorDescription <<- "R Script Err: Weigths for interested columns do not match."
+    return(FALSE)
+  }
+  
+  if (geodisthreshold <= 0){
+    gErrorOccurs <<- TRUE
+    gErrorDescription <<- "R Script Err: Cluster distance threshold must be a positive number."
+    return(FALSE)
+  }
+  
+  if (targetclusternum <= 0){
+    targetclusternum = 1
+  }
+  
+  if (interestedColNames <= 0){
+    interestedColNames = 1
+  }
+  
+  # displayColNames can be empty
+  displayColNames = displayColNames[which(displayColNames %in% colnames(gAttrData))]
+  
+  # assemble the output columns
+  gAttrData <<- gAttrData[, c(displayColNames,interestedColNames)]
   
   gAttrData[,"wardclut"] = 1:nrow(gAttrData)
      
@@ -416,18 +505,22 @@ f_run <- function(useCentroidDist = TRUE, ignoreEmptyRow = TRUE){
   if (ignoreEmptyRow==TRUE){
     filter = rep(FALSE, nrow(gAttrData))
     for(colname in interestedColNames){
-      filter = filter | (gAttrData[,colname] > gIgnoreEmptyRowJobNum)
+      filter = filter | (gAttrData[,colname] >= gIgnoreEmptyRowJobNum)
     }
     gAttrData = gAttrData[filter,]
     gPolyData = gPolyData[filter]
   }
   
   print(sprintf("=== rows :%i", nrow(gAttrData)))
-  
+  if (nrow(gAttrData) == 0){
+    gErrorOccurs <<- TRUE
+    gErrorDescription <<- "R Script Err: No valid data rows left."
+    return(FALSE)
+  }
   
   nmwt=data.frame(cbind(ATTR_NAME=interestedColNames, ATTR_WEIGHT=interestedColWeights))
   
-  f_wards(adata=gAttrData, pdata=gPolyData, ianmwh=nmwt, snswh=spatialNonSpatialDistWeights, dthresh=geodisthreshold, proj4string=gOriginalProj4string, clustnum=targetclusternum, useCentroidDist=useCentroidDist)
+  f_wards(adata=gAttrData, pdata=gPolyData, ianmwh=nmwt, snswh=spatialNonSpatialDistWeights, dthresh=geodisthreshold, proj4string=gOriginalProj4string, clustnum=targetclusternum, useCentroidDist=useCentroidDist, vcmode=gVcMode)
 }
 
 f_run()

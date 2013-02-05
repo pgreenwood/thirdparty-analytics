@@ -6,7 +6,15 @@
 #library(RJSONIO)
 
 f_outputparsing <- function(){
-  if(length(gRltList) == 0) return
+  
+  if (gErrorOccurs){
+  	print("=====================")
+  	print(gErrorDescription)
+  	print("=====================")
+  	return(list())
+	}
+  
+  if(length(gRltList) == 0) return(list())
   
   # return a list containing elements in geojson/json format
   RltJSONList = list()
@@ -48,5 +56,4 @@ f_DataFrame2JSONString <- function(targetDataFrame=NULL)
   
 }
 
-
-f_outputparsing()
+ f_outputparsing()
