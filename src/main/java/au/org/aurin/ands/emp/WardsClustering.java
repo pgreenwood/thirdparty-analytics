@@ -133,19 +133,7 @@ public class WardsClustering {
 	/**
 	 * {@link String} Input String for spatial and non-spatial distance weights
 	 */
-	
-	@Description("REXP result complex object")
-	@Out
-	public REXP worker;
-	/**
-	 * The result of {@link NewRegression} as an {@link REXP} object containing
-	 * all of the results from R
-	 */
-	
-	@Description("shp file path of tmp result")
-	@Out
-	public String tmpResultPath;
-	
+		
 	@Description("R connection pass on")
 	@Out
 	public RConnection cOut;
@@ -192,18 +180,9 @@ public class WardsClustering {
 			this.c.assign("gVcMode", new REXPLogical(this.vcmode));
 
 			// 3. call the function defined in the script
-			//this.worker = c.eval("try(eval(parse(text=script)),silent=FALSE)");
 			this.c.eval("try(eval(parse(text=script)),silent=FALSE)");
 			this.cOut = this.c;
-			return;
-			
-			//if(worker == null){ 
-			//	System.out.println("worker init failed");
-			//	return;}
-						
-			// 4. setup the output results
-			//this.setupOutputs();
-			
+			return;	
 
 		} catch (REngineException e) {
 			e.printStackTrace();
@@ -222,33 +201,4 @@ public class WardsClustering {
 			return null;
 		}
 	
-	private void setupOutputs() {
-
-		RList resultL = null;
-
-		try {
-			if (!this.worker.isNull()) {
-				System.out.println(" We have results back from R");
-
-				if (this.worker.inherits("try-error") || this.worker.isString()) {
-					throw new REXPMismatchException(this.worker,
-							"Try-Error from R \n" + this.worker.toString());
-				} else if (this.worker.isList()) {
-					// result list reply
-					resultL = this.worker.asList();
-					System.out.println("resultL.size() = " + resultL.size());
-					for (int i = 0; i < resultL.size(); i++) {
-						System.out.println("r" + i + " = "
-								+ resultL.at(i).asString());
-					}
-
-					System.out.println("========= test end =========");
-					
-				}
-			}
-		} catch (REXPMismatchException me) {
-			me.printStackTrace();
-		}
-
-	}
 }

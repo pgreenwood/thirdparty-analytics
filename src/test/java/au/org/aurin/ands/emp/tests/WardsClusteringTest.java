@@ -61,6 +61,7 @@ public class WardsClusteringTest {
 		sd2R.spatialDataFormatMode = 1;
 		
 		System.out.println(path);
+		System.out.println(sd2R.geoJSONFilePath);
 		
 		sd2R.exec();
 		
@@ -74,7 +75,7 @@ public class WardsClusteringTest {
 		wc.displayColNamesString = "LGA_CODE,LGA,ZONE_CODE";
 		wc.interestedColWeightsString = "0.333,0.333,0.333";
 		wc.spatialNonSpatialDistWeightsString = "0.9,0.1";
-		wc.ignoreEmptyRowJobNum = 10;
+		wc.ignoreEmptyRowJobNum = 20;
 		wc.vcmode = true;
 		wc.compute();
 		
