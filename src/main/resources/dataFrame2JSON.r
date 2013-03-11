@@ -6,7 +6,7 @@
 #library(RJSONIO)
 
 f_outputparsing <- function(){
-  
+
   if(length(gRltList) == 0) return(list())
   
   # return a list containing elements in geojson/json format

@@ -4,25 +4,25 @@ import java.io.IOException;
 import junit.framework.Assert;
 import org.junit.Test;
 
-import au.edu.uq.preload.LoadRScript;
+import au.edu.uq.preload.LoadRScriptEmpcluster;
 
 public class LoadRScriptTest {
 
 	/**
-	 * {@link LoadRScript} unit test
+	 * {@link LoadRScriptEmpcluster} unit test
 	 */
 	@Test
 	public void scriptLoaderTest() {
 
 		try {
-			String[] rScript = LoadRScript.getScripts();
+			String[] rScript = LoadRScriptEmpcluster.getScripts();
 			Assert.assertNotNull("Unable to load the R source script", rScript);
-			Assert.assertEquals(LoadRScript.numberOfScriptsLoaded(), rScript.length);
+			Assert.assertEquals(LoadRScriptEmpcluster.numberOfScriptsLoaded(), rScript.length);
 
 			for (int i = 0; i < rScript.length; i++) {
 				System.out.println("Script: " + "\n" + rScript[i]);
 			}
-			System.out.println(LoadRScript.numberOfScriptsLoaded() + " Scripts Loaded");
+			System.out.println(LoadRScriptEmpcluster.numberOfScriptsLoaded() + " Scripts Loaded");
 			
 		} catch (IOException e) {
 			e.printStackTrace();

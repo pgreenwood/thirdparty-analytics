@@ -32,7 +32,7 @@ import org.rosuda.REngine.REXPDouble;
 
 
 import au.edu.uq.interfaces.Statistics;
-import au.edu.uq.preload.LoadRScript;
+import au.edu.uq.preload.LoadRScriptEmpcluster;
 import au.edu.uq.preload.Rserve;
 
 import org.geotools.data.DataStore;
@@ -75,12 +75,13 @@ public class DataFrame2JSON {
 	@Description("REXP result complex object")
 	@Out
 	public REXP worker;
+
 	
 	@Execute
 	public void exec() throws RserveException{
 		try {
-		
-			this.c.assign("script", LoadRScript.getDataFrame2JSONScript());
+		  System.out.println("hashcode in DataFrame2JSON: " + c.hashCode());
+			this.c.assign("script", LoadRScriptEmpcluster.getDataFrame2JSONScript());
 			this.worker = this.c.eval("try(eval(parse(text=script)),silent=FALSE)");
 			
 			if(this.worker == null){
@@ -92,6 +93,8 @@ public class DataFrame2JSON {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		System.out.println("hashcode c in DataFrame2JSON: " + c.hashCode());
+    
 
 	}
 	
