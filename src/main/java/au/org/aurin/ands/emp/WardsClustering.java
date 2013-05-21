@@ -29,6 +29,8 @@ import org.rosuda.REngine.REXPVector;
 import org.rosuda.REngine.REXPString;
 import org.rosuda.REngine.REXPDouble;
 import org.rosuda.REngine.REXPLogical;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 import au.edu.uq.interfaces.Statistics;
@@ -69,6 +71,9 @@ import org.geotools.styling.StyleBuilder;
 
 
 public class WardsClustering {
+  
+  private static final Logger LOGGER = LoggerFactory
+      .getLogger(WardsClustering.class);
 	
 	@Description("Input R connection")
 	@In
@@ -141,8 +146,9 @@ public class WardsClustering {
 	@Execute
 	public void compute() throws REXPMismatchException {
 		try {
+		  
+		  LOGGER.debug("compute executed");
 
-		  System.out.println("hashcode cIn in WardClustering: " + c.hashCode());
 			// setup the script to execute
 			// 1. load the required script
 			try {
@@ -186,7 +192,9 @@ public class WardsClustering {
 			
 			//this.c.eval("try(eval(parse(text=script)),silent=FALSE)");
 			this.cOut = this.c;
+			LOGGER.debug("executeing eval");
 			REXP r = this.cOut.eval("try(eval(parse(text=script)),silent=FALSE)");
+			LOGGER.debug("eval executed");
       if (r.inherits("try-error")) throw new IllegalStateException(r.asString());
 			return;	
 
