@@ -1,12 +1,8 @@
 package au.org.aurin.ands.emp;
 
-import java.io.IOException;
-import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.net.URL;
-import java.util.List;
-
+import java.io.IOException;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -16,61 +12,38 @@ import oms3.annotations.Keywords;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
-import oms3.annotations.Status;
 
+import org.apache.commons.io.IOUtils;
 import org.rosuda.REngine.REXP;
-import org.rosuda.REngine.REXPList;
 import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.REngineException;
+
 import org.rosuda.REngine.RList;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
-import org.rosuda.REngine.REXPInteger;
-import org.rosuda.REngine.REXPVector;
-import org.rosuda.REngine.REXPString;
-import org.rosuda.REngine.REXPDouble;
 
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
-import au.edu.uq.interfaces.Statistics;
 import au.edu.uq.preload.LoadRScriptEmpcluster;
-import au.edu.uq.preload.Rserve;
-
-import org.geotools.data.DataStore;
-import org.geotools.data.DataStoreFactorySpi;
-import org.geotools.data.DataUtilities;
-import org.geotools.data.DefaultTransaction;
-import org.geotools.data.FeatureSource;
-import org.geotools.data.FeatureWriter;
-import org.geotools.data.FileDataStore;
-import org.geotools.data.FileDataStoreFinder;
-import org.geotools.data.Transaction;
-import org.geotools.data.collection.ListFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureIterator;
-import org.geotools.data.simple.SimpleFeatureSource;
-import org.geotools.data.simple.SimpleFeatureStore;
-import org.geotools.factory.CommonFactoryFinder;
-import org.geotools.feature.DefaultFeatureCollection;
-import org.geotools.feature.FeatureCollection;
-import org.geotools.feature.FeatureCollections;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.geojson.feature.FeatureJSON;
-import org.geotools.geometry.jts.GeometryBuilder;
-import org.geotools.geometry.jts.JTS;
-import org.geotools.geometry.jts.JTSFactoryFinder;
-
-import org.geotools.referencing.CRS;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.geotools.styling.PolygonSymbolizer;
-import org.geotools.styling.SLD;
-import org.geotools.styling.Style;
-import org.geotools.styling.StyleBuilder;
+import au.org.aurin.security.util.SslUtil;
 
 
 public class DataFrame2DataStore {
 	@In
-	public RConnection c;
+	public RConnection cIn;
+	
+	@In
+  public String xAurinUserId;
+	
+	@In
+  public String pathToTmpData;
+	
+	@Out
+  public String urlInDataStore;
 	
 	@Description("REXP result complex object")
 	@Out
@@ -80,9 +53,8 @@ public class DataFrame2DataStore {
 	@Execute
 	public void exec() throws RserveException{
 		try {
-		  System.out.println("hashcode in DataFrame2JSON: " + c.hashCode());
-			this.c.assign("script", LoadRScriptEmpcluster.getDataFrame2JSONScript());
-			this.worker = this.c.eval("try(eval(parse(text=script)),silent=FALSE)");
+			this.cIn.assign("script", LoadRScriptEmpcluster.getDataFrame2JSONScript());
+			this.worker = this.cIn.eval("try(eval(parse(text=script)),silent=FALSE)");
 			
 			if(this.worker == null){
 				System.out.println("==== worker init failed");
@@ -93,8 +65,32 @@ public class DataFrame2DataStore {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		System.out.println("hashcode c in DataFrame2JSON: " + c.hashCode());
     
+		
+    try {
+        FileInputStream inputStream = new FileInputStream(pathToTmpData);
+        String tmpDataFileString = IOUtils.toString(inputStream);
+        inputStream.close();
+        
+        MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
+        //headers.add("Accept", "application/json");
+        headers.add("Content-Type", "application/json");
+        headers.add("X-AURIN-USER-ID", this.xAurinUserId);
+        
+        RestTemplate restTemplate = new RestTemplate();
+        //HttpHeaders headers = new HttpHeaders();
+        //headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> requestEntity = new HttpEntity<String>(tmpDataFileString, headers);
+        SslUtil.trustJavaTrustStore();
+        urlInDataStore = restTemplate.postForObject("https://dev-api.aurin.org.au/mservices"
+	           + "/datastore/store/" + this.xAurinUserId, requestEntity, String.class);
+    } catch (FileNotFoundException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } 
 
 	}
 	
