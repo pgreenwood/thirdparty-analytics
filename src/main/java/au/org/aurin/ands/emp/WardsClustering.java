@@ -139,7 +139,7 @@ public class WardsClustering {
 	public RConnection cOut;
 	
 	@Execute
-	public void compute() {
+	public void compute() throws REXPMismatchException {
 		try {
 
 		  System.out.println("hashcode cIn in WardClustering: " + c.hashCode());
@@ -182,9 +182,12 @@ public class WardsClustering {
 			this.c.assign("gErrorOccurs", new REXPLogical(false));
 
 			// 3. call the function defined in the script
-			this.c.eval("try(eval(parse(text=script)),silent=FALSE)");
+			
+			
+			//this.c.eval("try(eval(parse(text=script)),silent=FALSE)");
 			this.cOut = this.c;
-			System.out.println("hashcode in WardClustering: " + cOut.hashCode());
+			REXP r = this.cOut.eval("try(eval(parse(text=script)),silent=FALSE)");
+      if (r.inherits("try-error")) throw new IllegalStateException(r.asString());
 			return;	
 
 		} catch (REngineException e) {
