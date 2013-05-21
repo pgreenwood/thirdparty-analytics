@@ -53,7 +53,7 @@ public class DataFrame2DataStoreTest {
 	}
 	
 	@Test
-	public void test() throws RserveException, IOException {
+	public void test() throws RserveException, IOException, REXPMismatchException {
 		
 		System.out.println("========= Test case NewWards");
 		SpatialData2RConnection sd2R = new SpatialData2RConnection();
