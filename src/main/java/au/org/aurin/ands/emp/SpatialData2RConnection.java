@@ -32,7 +32,7 @@ import org.rosuda.REngine.REXPDouble;
 
 
 import au.edu.uq.interfaces.Statistics;
-import au.edu.uq.preload.LoadRScript;
+import au.edu.uq.preload.LoadRScriptEmpcluster;
 import au.edu.uq.preload.Rserve;
 
 import org.geotools.data.DataStore;
@@ -71,6 +71,7 @@ public class SpatialData2RConnection {
 
 	@In
 	public String shpUrl = "";
+	
 	@In
 	public String geoJSONFilePath = "";
 	@In
@@ -84,7 +85,7 @@ public class SpatialData2RConnection {
 	public String rWorkingDir;
 	
 	@Out
-	public RConnection c;
+	public RConnection cOut;
 	
 	@Execute
 	public void exec() throws RserveException{
@@ -92,17 +93,17 @@ public class SpatialData2RConnection {
 			this.rWorkingDir = this.getClass().getClassLoader().getResource("outputs").getPath();
 			System.out.println(this.rWorkingDir);
 			
-			this.c = new RConnection();
-			this.c.assign("script", LoadRScript.getGeoJSON2DataFrameScript());
-			this.c.assign("shpUrl", new REXPString(this.shpUrl));
-			this.c.assign("geoJSONFilePath", new REXPString(this.geoJSONFilePath));
-			this.c.assign("geojSONString", new REXPString(this.geojSONString));
-			this.c.assign("spatialDataFormatMode", new REXPInteger(this.spatialDataFormatMode));
+			this.cOut = new RConnection();
+			this.cOut.assign("script", LoadRScriptEmpcluster.getGeoJSON2DataFrameScript());
+			this.cOut.assign("shpUrl", new REXPString(this.shpUrl));
+			this.cOut.assign("geoJSONFilePath", new REXPString(this.geoJSONFilePath));
+			this.cOut.assign("geojSONString", new REXPString(this.geojSONString));
+			this.cOut.assign("spatialDataFormatMode", new REXPInteger(this.spatialDataFormatMode));
 
-			this.c.assign("rWorkingDir", new REXPString(this.rWorkingDir));
+			this.cOut.assign("rWorkingDir", new REXPString(this.rWorkingDir));
 			
-			this.c.eval("try(eval(parse(text=script)),silent=FALSE)");
-			
+			this.cOut.eval("try(eval(parse(text=script)),silent=FALSE)");
+			System.out.println("hashcode cOut in SpatialData2RConnection: " + cOut.hashCode());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

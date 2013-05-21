@@ -20,7 +20,7 @@ GLOBAL_polygon_id_prefix = "ANDS_M_"
 GLOBAL_polygon_id_counter  = 1
 
 #set up the working directory
-setwd(rWorkingDir)
+#setwd(rWorkingDir)
 
 gShowDebugInfo = TRUE
 debugPrint <- function(str){
@@ -437,8 +437,8 @@ f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string
   # save a new copy of origial polygons with updated cluseter information
   sp_bak =SpatialPolygons(pdata_bak)
   sp_bak@proj4string = CRS(CONST_projected_proj4string)
-  newDataFrame_bak = SpatialPolygonsDataFrame(sp_bak,data=adata_bak, match.ID = FALSE)
-  newDataFrame_pj_bak = spTransform(newDataFrame_bak,CRS(CONST_EPSG4283_proj4string))
+  newDataFrame_bak <<- SpatialPolygonsDataFrame(sp_bak,data=adata_bak, match.ID = FALSE)
+  newDataFrame_pj_bak <<- spTransform(newDataFrame_bak,CRS(CONST_EPSG4283_proj4string))
   
   #plot(newDataFrame_pj_bak)
   #plot(newDataFrame_pj)
@@ -454,6 +454,10 @@ f_wards <- function(adata, pdata, ianmwh, snswh=c(0.5,0.5), dthresh, proj4string
   # put result into gRltList
   gRltList[[1]] <<- newDataFrame_pj_bak
   gRltList[[2]] <<- newDataFrame_pj@data
+  
+  # output results
+  dataFrameSpatial <<- newDataFrame_pj_bak
+  dataFrameTabular <<- newDataFrame_pj@data
   
 }
 

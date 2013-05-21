@@ -14,14 +14,16 @@ gPolyData = NULL
 gRltList = list()
 gOriginalProj4string = ""
 gIgnoreEmptyRowJobNum = 1
+gTestVar = TRUE
 gVcMode = TRUE
 gErrorOccurs = FALSE
-gErrorDescription = ""
+#gErrorDescription = "you are "
+#assign("gErrorDescription", "you are ", envir = .GlobalEnv)
+
 
 f_spatialDataParsing <- function(){
   
-  gErrorOccurs <<- FALSE
-  gErrorDescription <<- ""
+  gErrorOccurs <<- TRUE
   
   setScale(1e+10)
   

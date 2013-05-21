@@ -32,7 +32,7 @@ import org.rosuda.REngine.REXPLogical;
 
 
 import au.edu.uq.interfaces.Statistics;
-import au.edu.uq.preload.LoadRScript;
+import au.edu.uq.preload.LoadRScriptEmpcluster;
 import au.edu.uq.preload.Rserve;
 
 import org.geotools.data.DataStore;
@@ -115,7 +115,7 @@ public class WardsClustering {
 	
 	@Description("igore data row if job numbers in all interested columns are less than this value.")
 	@In
-	public double ignoreEmptyRowJobNum = 10;
+	public double ignoreEmptyRowJobNum = 1;
 	/**
 	 * {@link double} igore data row if job numbers in all interested columns are less than this value
 	 */
@@ -142,10 +142,11 @@ public class WardsClustering {
 	public void compute() {
 		try {
 
+		  System.out.println("hashcode cIn in WardClustering: " + c.hashCode());
 			// setup the script to execute
 			// 1. load the required script
 			try {
-				this.c.assign("script", LoadRScript.getWardsClusterScript());
+				this.c.assign("script", LoadRScriptEmpcluster.getWardsClusterScript());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -178,10 +179,12 @@ public class WardsClustering {
 			this.c.assign("spatialNonSpatialDistWeights", new REXPDouble(spatialNonSpatialDistWeights));
 			this.c.assign("gIgnoreEmptyRowJobNum", new REXPDouble(this.ignoreEmptyRowJobNum));
 			this.c.assign("gVcMode", new REXPLogical(this.vcmode));
+			this.c.assign("gErrorOccurs", new REXPLogical(false));
 
 			// 3. call the function defined in the script
 			this.c.eval("try(eval(parse(text=script)),silent=FALSE)");
 			this.cOut = this.c;
+			System.out.println("hashcode in WardClustering: " + cOut.hashCode());
 			return;	
 
 		} catch (REngineException e) {
