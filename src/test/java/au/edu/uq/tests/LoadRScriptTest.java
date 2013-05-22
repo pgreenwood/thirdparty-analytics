@@ -4,7 +4,7 @@ import java.io.IOException;
 import junit.framework.Assert;
 import org.junit.Test;
 
-import au.edu.uq.preload.LoadRScriptEmpcluster;
+import au.org.aurin.ands.emp.preload.LoadRScriptEmpcluster;
 
 public class LoadRScriptTest {
 
