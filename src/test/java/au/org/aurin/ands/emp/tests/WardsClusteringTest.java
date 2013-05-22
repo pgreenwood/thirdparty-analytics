@@ -1,34 +1,24 @@
 package au.org.aurin.ands.emp.tests;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
-import net.sf.json.JSON;
-import net.sf.json.JSONSerializer;
-import net.sf.json.util.JSONUtils;
-
-import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.rosuda.REngine.REXP;
-import org.rosuda.REngine.REXPDouble;
+import org.rosuda.REngine.REXPInteger;
 import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.RList;
+import org.rosuda.REngine.REXPString;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 
-import au.edu.uq.preload.Rserve;
+
 import au.org.aurin.ands.emp.WardsClustering;
-import au.org.aurin.ands.emp.SpatialData2RConnection;
-import au.org.aurin.ands.emp.DataFrame2JSON;
+import au.org.aurin.ands.emp.preload.LoadRScriptEmpcluster;
+import au.org.aurin.ands.emp.preload.Rserve;
 
 
-public class WardsClusteringTestOld {
+public class WardsClusteringTest {
 
 	@BeforeClass
 	public static void initRserve() {
@@ -56,38 +46,29 @@ public class WardsClusteringTestOld {
 	public void test() throws RserveException, IOException, REXPMismatchException {
 		
 		System.out.println("========= Test case NewWards");
-		SpatialData2RConnection sd2R = new SpatialData2RConnection();
 		String path  = this.getClass().getClassLoader().getResource("data/ABS_data_by_DZN/DZN").getPath();
 		path += "/" + "smalldataNew";
 		
-//    String path  = this.getClass().getClassLoader().getResource("data/testSample").getPath();
-//    path += "/" + "IssuePolygons";
 		
-		sd2R.shpUrl = path;
-		///Users/philipgreenwood/gitRepositories/thirdparty-analytics/src/main/resources/data/ABS_data_by_DZN/DZN/smalldata.geojson
-		path = path + ".geojson";
-		sd2R.geoJSONFilePath = path;
-		System.out.println("path =" + path);
-		
+    String rWorkingDir = this.getClass().getClassLoader().getResource("outputs").getPath();
+    System.out.println(rWorkingDir);
+      
+    RConnection cOut = new RConnection();
+    cOut.assign("script", LoadRScriptEmpcluster.getGeoJSON2DataFrameScript());
+    cOut.assign("shpUrl", new REXPString(path));
+    cOut.assign("geoJSONFilePath", new REXPString(path + ".geojson"));
+    //cOut.assign("geojSONString", new REXPString(this.geojSONString));
+    cOut.assign("spatialDataFormatMode", new REXPInteger(1));
 
-		
-//		try {
-		  File file = new File(path.trim());
-//		  sd2R.geojSONString = FileUtils.readFileToString(file);
-//		} catch (IOException e) {
-//      throw new IOException("Unable to load read the resource file ");
-//    }
-		    		    
-		sd2R.spatialDataFormatMode = 1; //0=shp, 1=geoJSON file, 2=geoJSON string
-		
-		System.out.println(path);
-		System.out.println(sd2R.geoJSONFilePath);
-		
-		sd2R.exec();
+    cOut.assign("rWorkingDir", new REXPString(rWorkingDir));
+      
+    cOut.eval("try(eval(parse(text=script)),silent=FALSE)");
+      System.out.println("hashcode cOut in SpatialData2RConnection: " + cOut.hashCode());
+   
 		
 		WardsClustering wc = new WardsClustering();
 
-		wc.c = sd2R.cOut;
+		wc.c = cOut;
 		
 		wc.geodisthreshold = 10;
 		wc.targetclusternum = 1;
@@ -98,10 +79,6 @@ public class WardsClusteringTestOld {
 		wc.ignoreEmptyRowJobNum = 1;
 		wc.vcmode = true;
 		wc.compute();
-		
-		DataFrame2JSON op= new DataFrame2JSON();
-		op.c = wc.cOut;
-		op.exec();
 
 	}
 	

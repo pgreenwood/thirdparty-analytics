@@ -58,7 +58,7 @@
 		<dependency>
 			<groupId>au.org.aurin</groupId>
 			<artifactId>annotations</artifactId>
-			<version>0.3</version>
+			<version>0.3.5</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -66,27 +66,27 @@
 			<version>4.10</version>
 			<scope>test</scope>
 		</dependency>
-				<dependency>
-			<groupId>net.sf.json-lib</groupId>
+		<dependency>
+ 			<groupId>net.sf.json-lib</groupId>
 			<artifactId>json-lib</artifactId>
 			<version>2.4</version>
 			<classifier>jdk15</classifier>
-		</dependency>
-				<dependency>
+ 		</dependency> 
+<!--				<dependency>
             <groupId>au.org.aurin.third-party</groupId>
             <artifactId>ProcessingCore</artifactId>
             <version>1.5.1</version>
-        </dependency>
-        		<dependency>
+        </dependency>-->
+<!--         <dependency>
 			<groupId>com.itextpdf</groupId>
 			<artifactId>itextpdf</artifactId>
 			<version>5.3.2</version>
-		</dependency>
-        <dependency>
+		</dependency> -->
+<!--         <dependency>
             <groupId>au.org.aurin</groupId>
             <artifactId>statistics</artifactId>
             <version>0.6</version>
-        </dependency>
+        </dependency> -->
         <!-- Included for DataFrame2Datastore -->
         <dependency>
 			<groupId>org.springframework</groupId>
