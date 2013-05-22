@@ -4,11 +4,39 @@
   <artifactId>empcluster</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>empcluster</name>
+  <url>www.aurin.org.au</url>
+  <organization>
+    <name>The University of Melbourne</name>
+  </organization>
+
+  <scm>
+    <url>http://github.com/AURIN/thirdparty-analytics</url>
+    <connection>scm:git:git://github.com/AURIN/thirdparty-analytics.git</connection>
+    <tag>HEAD</tag>
+  </scm>
+
+  <distributionManagement>
+    <repository>
+      <id>aurin</id>
+      <url>https://mvn.aurin.org.au/nexus/content/repositories/stable/</url>
+      <name>AURIN Releases</name>
+    </repository>
+    <snapshotRepository>
+      <id>aurin-snapshots</id>
+      <url>https://mvn.aurin.org.au/nexus/content/repositories/snapshots/</url>
+      <name>AURIN Snapshots</name>
+    </snapshotRepository>
+  </distributionManagement>
+
+  <ciManagement>
+    <system>jenkins</system>
+    <url>https://ci.aurin.org.au/jenkins</url>
+  </ciManagement>
   
   <properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<geotools.version>8.0</geotools.version>
-	</properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <geotools.version>8.0</geotools.version>
+  </properties>
 
 	<build>
 		<plugins>
