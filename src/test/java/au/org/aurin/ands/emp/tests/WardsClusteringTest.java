@@ -12,6 +12,7 @@ import org.rosuda.REngine.REXPString;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 
+
 import au.org.aurin.ands.emp.WardsClustering;
 import au.org.aurin.ands.emp.preload.LoadRScriptEmpcluster;
 import au.org.aurin.ands.emp.preload.Rserve;
@@ -45,8 +46,8 @@ public class WardsClusteringTest {
 	public void test() throws RserveException, IOException, REXPMismatchException {
 		
 		System.out.println("========= Test case NewWards");
-		String path  = this.getClass().getClassLoader().getResource("data/testSample").getPath();
-		path += "/" + "IssuePolygonsRePrj";
+		String path  = this.getClass().getClassLoader().getResource("data/ABS_data_by_DZN/DZN").getPath();
+		path += "/" + "smalldataNew";
 		
 		
     String rWorkingDir = this.getClass().getClassLoader().getResource("outputs").getPath();
