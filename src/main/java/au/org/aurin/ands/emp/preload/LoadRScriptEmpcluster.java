@@ -23,9 +23,9 @@ public class LoadRScriptEmpcluster {
   protected final static Logger LOG = LoggerFactory.getLogger(LoadRScriptEmpcluster.class);
 
 	private static String[] rScriptResource = {
-		"/geoJSON2DataFrame.r",
-		"/wardsClustering.r",
-		"/dataFrame2JSON.r"
+		"geoJSON2DataFrame.r",
+		"wardsClustering.r",
+		"dataFrame2JSON.r"
 	};
 	
 	private static String[] rScript;
@@ -87,7 +87,7 @@ public class LoadRScriptEmpcluster {
         rScript = new String[rScriptResource.length];
         for (int i = 0; i < rScriptResource.length; i++) {
 
-          String resource = "/au/edu/uq/aurin/rscripts/" + rScriptResource[i];
+          String resource = "/" + rScriptResource[i];
           is = LoadRScriptEmpcluster.class.getResourceAsStream(resource);
           if (is == null) {
             throw new IOException("InputStream is = " + is);
