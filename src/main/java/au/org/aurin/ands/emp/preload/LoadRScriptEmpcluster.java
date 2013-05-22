@@ -1,4 +1,4 @@
-package au.edu.uq.preload;
+package au.org.aurin.ands.emp.preload;
 
 import java.io.File;
 import java.io.IOException;
@@ -6,38 +6,12 @@ import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
 
-import au.edu.uq.classifiers.EqualInterval;
-import au.edu.uq.classifiers.Interval;
-import au.edu.uq.classifiers.QuantileInterval;
-import au.edu.uq.statistics.GeneralisedLinearModel;
-import au.edu.uq.statistics.NewRegression;
-import au.edu.uq.statistics.PrincipalComponentAnalysis;
-import au.edu.uq.statistics.ClusterAnalysisHierarchical;
-import au.edu.uq.statistics.ClusterAnalysisKmeans;
-import au.edu.uq.statistics.Regression;
-import au.edu.uq.summaries.SummaryA;
-import au.edu.uq.statistics.WinsorA;
-
 /**
  * {@link LoadRScriptEmpcluster} loads the following R-Scripts {@link File} as a 
  * {@link String} resource.
  *  
- * <p>Data Classifiers:
- * {@link EqualInterval}, {@link QuantileInterval}, {@link Interval} </p>
  * 
- * <p>Linear Model:
- * {@link Regression}, {@link GeneralisedLinearModel} </p>
- * 
- * <p>Component Analysis: 
- * {@link PrincipalComponentAnalysis} </p> 
- * 
- * <p>Cluster Analysis:
- * {@link ClusterAnalysisHierarchical}, {@link ClusterAnalysisKmeans} </p>
- * 
- * <p>Summary Statistic:
- * {@link SummaryA} </p>
- * 
- * @author irfan
+ * @author Benny, Philip Greenwood
  * 
  */
 public class LoadRScriptEmpcluster {
