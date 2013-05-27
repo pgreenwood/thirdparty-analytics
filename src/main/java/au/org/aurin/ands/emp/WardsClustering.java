@@ -5,6 +5,7 @@ import java.io.IOException;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 
 import org.rosuda.REngine.REXP;
@@ -26,71 +27,81 @@ public class WardsClustering {
   private static final Logger LOGGER = LoggerFactory
       .getLogger(WardsClustering.class);
 	
+  @In
 	@Description("Input R connection")
-	@In
 	public RConnection c;
 	/**
 	 * {@link RConnection} A valid connection to a running {@link Rserve}
 	 * instance
 	 */
 	
+  @In
+  @Name("Geo-Distance Threshold")
 	@Description("Input Integer for geo-distance threshold")
-	@In
 	public int geodisthreshold = 20;
 	/**
 	 * {@link int} Input Integer for geo-distance threshold
 	 */
 	
+  @In
+  @Name("Target Cluster Number")
 	@Description("Input Integer for target cluster number")
-	@In
 	public int targetclusternum = 1;
 	/**
 	 * {@link int} Input Integer for target cluster number
 	 */
 	
+  @In
+  @Name("Attribute Selection")
 	@Description("Input String for interested column names")
-	@In
 	public String interestedColNamesString;
 	/**
 	 * {@link String} Input String for interested column names
 	 */
 	
+  @In
+  @Name("Attribute Weights")
 	@Description("Input String for interested column weights")
-	@In
 	public String interestedColWeightsString;
 	/**
 	 * {@link String} Input String for interested column weights
 	 */
 
+  @In
+  @Name("Attribute Display Names")
 	@Description("Input String for display column names string")
-	@In
 	public String displayColNamesString;
 	/**
 	 * {@link String} Input String for display column names string
 	 */
 	
-	@Description("igore data row if job numbers in all interested columns are less than this value.")
-	@In
+  @In
+  @Name("Occupation Count Cut-Off")
+	@Description("Igore data row if job numbers in all selected columns are less than this value.")
 	public double ignoreEmptyRowJobNum = 1;
 	/**
 	 * {@link double} igore data row if job numbers in all interested columns are less than this value
 	 */
 	
-	@Description("perform clustering using value chain mode or not. if true, the interested columns will be added up into a new column called 'vcvalue', on which, the non-spatial distance will be computed and used as a factor to generate the final clustering result")
-	@In
+  @In
+  @Name("Value Chain Mode")
+	@Description("Perform clustering using value chain mode or not. " +
+			"if true, the interested columns will be added up into a new column called 'vcvalue', " +
+			"on which, the non-spatial distance will be computed and used as a factor to generate the final clustering result")
 	public boolean vcmode = true;
 	/**
 	 * {@link boolean} perform clustering using value chain mode or not. if true, the interested columns will be added up into a new column called 'vcvalue', on which, the non-spatial distance will be computed and used as a factor to generate the final clustering resul
 	 */
 	
+  @In
+  @Name("Spatial vs Non-Spatial Distance Weights")
 	@Description("Input String for spatial and non-spatial distance weights")
-	@In
 	public String spatialNonSpatialDistWeightsString;
 	/**
 	 * {@link String} Input String for spatial and non-spatial distance weights
 	 */
 		
-	@Description("R connection pass on")
+	@Description("R Connection output")
 	@Out
 	public RConnection cOut;
 	
