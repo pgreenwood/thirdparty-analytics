@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import au.org.aurin.ands.emp.preload.LoadRScriptEmpcluster;
 
-public class LoadRScriptTest {
+public class LoadRScriptEmpClusterTest {
 
 	/**
 	 * {@link LoadRScriptEmpcluster} unit test
