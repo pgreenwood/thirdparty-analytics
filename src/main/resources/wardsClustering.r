@@ -3,9 +3,10 @@
 #library(gpclib)     # General Polygon Clipping library 
 #library(rgdal)      # for map projection work; also loads sp
 #library(rgeos)
-#library(PBSmapping) # for GIS_like geospatial object manipulation / anslysis including poly
-#require(gpclib)
+#library(PBSmapping) # for GIS_like geospatial object manipulation / analysis including poly
+
 gpclibPermit()
+require(gpclib)
 
 CONST_projected_proj4string = "+proj=merc +datum=WGS84"
 # the output projection string is EPSG4283, which can be obtained this way:
