@@ -7,6 +7,7 @@
 #require(gpclib)
 gpclibPermit()
 
+
 CONST_projected_proj4string = "+proj=merc +datum=WGS84"
 # the output projection string is EPSG4283, which can be obtained this way:
 # EPSG = make_EPSG()
