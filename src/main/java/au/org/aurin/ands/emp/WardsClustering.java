@@ -5,6 +5,7 @@ import java.io.IOException;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 
 import org.rosuda.REngine.REXP;
@@ -26,71 +27,81 @@ public class WardsClustering {
   private static final Logger LOGGER = LoggerFactory
       .getLogger(WardsClustering.class);
 	
+  @In
 	@Description("Input R connection")
-	@In
 	public RConnection c;
 	/**
 	 * {@link RConnection} A valid connection to a running {@link Rserve}
 	 * instance
 	 */
 	
-	@Description("Input Integer for geo-distance threshold")
-	@In
+  @In
+  @Name("Geo-Distance Threshold")
+	@Description("Set maximum distance beyond which polygons will not merge.")
 	public int geodisthreshold = 20;
 	/**
 	 * {@link int} Input Integer for geo-distance threshold
 	 */
 	
-	@Description("Input Integer for target cluster number")
-	@In
+  @In
+  @Name("Target Cluster Number")
+	@Description("Set minimum cluster number at which algorithm will stop.")
 	public int targetclusternum = 1;
 	/**
 	 * {@link int} Input Integer for target cluster number
 	 */
 	
-	@Description("Input String for interested column names")
-	@In
+  @In
+  @Name("Non-Spatial Attribute Selection")
+	@Description("Select all non-spatial attributes required for analysis.")
 	public String interestedColNamesString;
 	/**
 	 * {@link String} Input String for interested column names
 	 */
 	
-	@Description("Input String for interested column weights")
-	@In
+  @In
+  @Name("Non-Spatial Attribute Weights")
+	@Description("Insert comma separated values. Values must sum to 1.")
 	public String interestedColWeightsString;
 	/**
 	 * {@link String} Input String for interested column weights
 	 */
 
-	@Description("Input String for display column names string")
-	@In
+  @In
+  @Name("Additional Attributes For Display")
+	@Description("Additional attributes for display in dataset tabular output.")
 	public String displayColNamesString;
 	/**
 	 * {@link String} Input String for display column names string
 	 */
 	
-	@Description("igore data row if job numbers in all interested columns are less than this value.")
-	@In
+  @In
+  @Name("Non-Spatial Attribute Minimum Count")
+	@Description("Select minimum non-spatial attribute for polygons to be included in cluster analysis.")
 	public double ignoreEmptyRowJobNum = 1;
 	/**
-	 * {@link double} igore data row if job numbers in all interested columns are less than this value
+	 * {@link double} ignore data row if job numbers in all interested columns are less than this value
 	 */
 	
-	@Description("perform clustering using value chain mode or not. if true, the interested columns will be added up into a new column called 'vcvalue', on which, the non-spatial distance will be computed and used as a factor to generate the final clustering result")
-	@In
+  @In
+  @Name("Value Chain Mode")
+	@Description("Perform clustering using value chain mode or not. " +
+			"If false, the non-spatial attributes will be added up into a new column called 'vcvalue', " +
+			"on which, the non-spatial distance will be computed and used as a factor to generate the final clustering result")
 	public boolean vcmode = true;
 	/**
 	 * {@link boolean} perform clustering using value chain mode or not. if true, the interested columns will be added up into a new column called 'vcvalue', on which, the non-spatial distance will be computed and used as a factor to generate the final clustering resul
 	 */
 	
-	@Description("Input String for spatial and non-spatial distance weights")
-	@In
+  @In
+  @Name("Spatial vs Non-Spatial Distance Weights")
+	@Description("Insert comma separated values. Values must sum to 1.")
 	public String spatialNonSpatialDistWeightsString;
 	/**
 	 * {@link String} Input String for spatial and non-spatial distance weights
 	 */
 		
-	@Description("R connection pass on")
+	@Description("R Connection output")
 	@Out
 	public RConnection cOut;
 	

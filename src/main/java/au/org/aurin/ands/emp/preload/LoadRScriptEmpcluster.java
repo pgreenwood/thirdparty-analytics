@@ -2,24 +2,30 @@ package au.org.aurin.ands.emp.preload;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link LoadRScriptEmpcluster} loads the following R-Scripts {@link File} as a 
  * {@link String} resource.
  *  
  * 
- * @author Benny, Philip Greenwood
+ * @author Irfan
  * 
  */
 public class LoadRScriptEmpcluster {
+  
+  protected final static Logger LOG = LoggerFactory.getLogger(LoadRScriptEmpcluster.class);
 
 	private static String[] rScriptResource = {
-		"/geoJSON2DataFrame.r",
-		"/wardsClustering.r",
-		"/dataFrame2JSON.r"
+		"geoJSON2DataFrame.r",
+		"wardsClustering.r",
+		"dataFrame2JSON.r"
 	};
 	
 	private static String[] rScript;
@@ -60,44 +66,49 @@ public class LoadRScriptEmpcluster {
 		return rScript.length;
 	}
 	
-	/**
-	 * Represents all the algorithms implementation in R scripts as a
-	 * {@link String} array for each of the script
-	 * 
-	 * @return {@link String} array representation of R scripts available as a
-	 *         resource {@link File}
-	 * @throws IOException
-	 *             If unable to load the R resource {@link File}'s
-	 */
-	public static synchronized String[] getScripts() throws IOException {
+  /**
+   * Represents all the algorithms implementation in R scripts as a
+   * {@link String} array for each of the script
+   * 
+   * @return {@link String} array representation of R scripts available as a
+   *         resource File
+   * @throws IOException
+   *             If unable to load the R resource File's
+   */
+  public static synchronized String[] getScripts() throws IOException {
 
-		URL url = null;
-		File f = null;
+    InputStream is = null;
 
-		if (rScript == null) {
-			try {
-				rScript = new String[rScriptResource.length];
+    LOG.info("Start loading R-scripts");
+    
+    if (rScript == null) {
 
-				for (int i = 0; i < rScriptResource.length; i++) {
-					url = LoadRScriptEmpcluster.class.getResource(rScriptResource[i]);
-					if (url == null)
-						throw new IOException("url = " + url);
+      try {
+        rScript = new String[rScriptResource.length];
+        for (int i = 0; i < rScriptResource.length; i++) {
 
-					f = FileUtils.toFile(url);
-					if (f == null)
-						throw new IOException("file f = " + f);
-
-					rScript[i] = FileUtils.readFileToString(f);
-//					System.out.println(rScript[i] + "\n Rscript loaded." + 
-//							 		" script size = " + rScript[i].length());
-				}
-			} catch (IOException e) {
-				throw new IOException("Unable to load read the resource file ");
-			}
-		} else {
-//			System.out.println(rScript.length + " Rscripts already loaded.");
-		}
-		return rScript;
-	}
+          String resource = "/" + rScriptResource[i];
+          is = LoadRScriptEmpcluster.class.getResourceAsStream(resource);
+          if (is == null) {
+            throw new IOException("InputStream is = " + is);
+          } else {
+            // Assuming this is deployed on {L}unix also accepts
+            // windows R-script files as input
+            rScript[i] = IOUtils.toString(is).replaceAll(
+                System.getProperty("line.separator"), IOUtils.LINE_SEPARATOR_UNIX);
+            LOG.info("R-Script size: " + rScript[i].length() + " Bytes for "+ resource);
+            is.close();
+          }
+        }
+      } catch (IOException e) {
+        throw new IOException("Unable to load read the resource file ");
+      }
+    } else {
+       LOG.info(rScript.length + " R-scripts already loaded.");
+    }
+    
+    LOG.info("Done loading R-scripts");
+    return rScript;
+  }
 
 }
