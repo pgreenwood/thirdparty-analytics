@@ -4,8 +4,9 @@
 #library(rgdal)      # for map projection work; also loads sp
 #library(rgeos)
 #library(PBSmapping) # for GIS_like geospatial object manipulation / anslysis including poly
-gpclibPermit()
 #require(gpclib)
+gpclibPermit()
+
 
 CONST_projected_proj4string = "+proj=merc +datum=WGS84"
 # the output projection string is EPSG4283, which can be obtained this way:
