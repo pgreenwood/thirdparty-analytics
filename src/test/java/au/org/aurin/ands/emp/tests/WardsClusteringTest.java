@@ -32,9 +32,9 @@ public class WardsClusteringTest {
 	}
 	@AfterClass
 	public static void terminateRserve() {
-	  boolean rRunning = Rserve.shutdownRserve();
-    // 0. Start Rserve - This should already be running, if not we start it
-         rRunning = Rserve.checkLocalRserve();
+		boolean rRunning = true;
+		// Stop Rserve if we started it
+		rRunning = Rserve.shutdownRserve();
 		System.out.println("Rserve shutdown? " + rRunning);
 		if (!rRunning) {
 			Assert.fail("Cannot Shutdown Rserve, Check if there are permissions "
@@ -63,9 +63,7 @@ public class WardsClusteringTest {
     cOut.assign("rWorkingDir", new REXPString(rWorkingDir));
       
     cOut.eval("try(eval(parse(text=script)),silent=FALSE)");
-      System.out.println("hashcode cOut in SpatialData2RConnection: " + cOut.hashCode());
-   
-		
+   		
 		WardsClustering wc = new WardsClustering();
 
 		wc.cIn = cOut;

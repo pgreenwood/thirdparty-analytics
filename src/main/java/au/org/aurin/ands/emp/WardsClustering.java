@@ -109,24 +109,48 @@ public class WardsClustering {
 	@Initialize
 	public void validateInputs() throws IllegalArgumentException {
 	  //RConnection
-	  //geodisthreshold\
+	  if (this.cIn == null) {
+	    throw new IllegalStateException("RConnection is null");
+	  }
+	  //geodisthreshold
+	  if (this.geodisthreshold < 0) {
+      throw new IllegalStateException("Illegal value for Geo-Distance Threshold: " + this.geodisthreshold);
+    }
 	  //targetclusternum
+	  if (this.targetclusternum < 0) {
+      throw new IllegalStateException("Illegal value for Target Cluster Number: " + this.targetclusternum);
+    }
 	  //interestedColNamesString
-	  //interestedColWeightsString
+	  if (this.interestedColNamesString == null) {
+      throw new IllegalStateException("Non-Spatial Attribute Selection is null: " + this.interestedColNamesString);
+    }
+	  //Non-Spatial Attribute Weights
+	  if (this.interestedColWeightsString == null) {
+      throw new IllegalStateException("Non-Spatial Attribute Weights is null: " + this.interestedColWeightsString);
+    }
 	  //displayColNamesString
+	  if (this.displayColNamesString == null) {
+      throw new IllegalStateException("Illegal value for Additional Attributes For Display: " + this.displayColNamesString);
+    }
 	  //ignoreEmptyRowJobNum
-	  //ignoreEmptyRowJobNum
-	  //vcmode
+    if (this.ignoreEmptyRowJobNum < 0) {
+      throw new IllegalStateException("Illegal value for Non-Spatial Attribute Minimum Count: " + this.ignoreEmptyRowJobNum);
+    }
+	  //Value Chain Mode
+	  if (this.vcmode != true & this.vcmode != false) {
+      throw new IllegalStateException("Illegal value for Value Chain Mode: " + this.vcmode);
+    }
 	  //spatialNonSpatialDistWeightsString
+	  if (this.spatialNonSpatialDistWeightsString == null) {
+      throw new IllegalStateException("Illegal value for Spatial vs Non-Spatial Distance Weights: " + this.spatialNonSpatialDistWeightsString);
+    }
 	}
 	
 	
 	@Execute
 	public void compute() throws REXPMismatchException {
 		try {
-		  
 		  LOGGER.debug("compute executed");
-
 			// setup the script to execute
 			// 1. load the required script
 			try {
