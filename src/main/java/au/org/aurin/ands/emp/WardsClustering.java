@@ -5,6 +5,7 @@ import java.io.IOException;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Initialize;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 
@@ -29,7 +30,7 @@ public class WardsClustering {
 	
   @In
 	@Description("Input R connection")
-	public RConnection c;
+	public RConnection cIn;
 	/**
 	 * {@link RConnection} A valid connection to a running {@link Rserve}
 	 * instance
@@ -105,6 +106,21 @@ public class WardsClustering {
 	@Out
 	public RConnection cOut;
 	
+	@Initialize
+	public void validateInputs() throws IllegalArgumentException {
+	  //RConnection
+	  //geodisthreshold\
+	  //targetclusternum
+	  //interestedColNamesString
+	  //interestedColWeightsString
+	  //displayColNamesString
+	  //ignoreEmptyRowJobNum
+	  //ignoreEmptyRowJobNum
+	  //vcmode
+	  //spatialNonSpatialDistWeightsString
+	}
+	
+	
 	@Execute
 	public void compute() throws REXPMismatchException {
 		try {
@@ -114,17 +130,17 @@ public class WardsClustering {
 			// setup the script to execute
 			// 1. load the required script
 			try {
-				this.c.assign("script", LoadRScriptEmpcluster.getWardsClusterScript());
+				this.cIn.assign("script", LoadRScriptEmpcluster.getWardsClusterScript());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 
 
 			// 2. setup the inputs
-			this.c.assign("geodisthreshold", new REXPInteger(this.geodisthreshold));
-			this.c.assign("targetclusternum", new REXPInteger(this.targetclusternum));
-			this.c.assign("displayColNames", new REXPString(this.interestedColNamesString.split(",")));
-			this.c.assign("interestedColNames", new REXPString(this.interestedColNamesString.split(",")));
+			this.cIn.assign("geodisthreshold", new REXPInteger(this.geodisthreshold));
+			this.cIn.assign("targetclusternum", new REXPInteger(this.targetclusternum));
+			this.cIn.assign("displayColNames", new REXPString(this.interestedColNamesString.split(",")));
+			this.cIn.assign("interestedColNames", new REXPString(this.interestedColNamesString.split(",")));
 			
 			double[] interestedColWeights = {};
 			try {
@@ -134,7 +150,7 @@ public class WardsClustering {
 				e.printStackTrace();
 				}
 			
-			this.c.assign("interestedColWeights", new REXPDouble(interestedColWeights));
+			this.cIn.assign("interestedColWeights", new REXPDouble(interestedColWeights));
 			
 			double[] spatialNonSpatialDistWeights = {0.5, 0.5};
 			try {
@@ -144,16 +160,16 @@ public class WardsClustering {
 				e.printStackTrace();
 			}
 			
-			this.c.assign("spatialNonSpatialDistWeights", new REXPDouble(spatialNonSpatialDistWeights));
-			this.c.assign("gIgnoreEmptyRowJobNum", new REXPDouble(this.ignoreEmptyRowJobNum));
-			this.c.assign("gVcMode", new REXPLogical(this.vcmode));
-			this.c.assign("gErrorOccurs", new REXPLogical(false));
+			this.cIn.assign("spatialNonSpatialDistWeights", new REXPDouble(spatialNonSpatialDistWeights));
+			this.cIn.assign("gIgnoreEmptyRowJobNum", new REXPDouble(this.ignoreEmptyRowJobNum));
+			this.cIn.assign("gVcMode", new REXPLogical(this.vcmode));
+			this.cIn.assign("gErrorOccurs", new REXPLogical(false));
 
 			// 3. call the function defined in the script
 			
 			
 			//this.c.eval("try(eval(parse(text=script)),silent=FALSE)");
-			this.cOut = this.c;
+			this.cOut = this.cIn;
 			LOGGER.debug("executeing eval");
 			REXP r = this.cOut.eval("try(eval(parse(text=script)),silent=FALSE)");
 			LOGGER.debug("eval executed");
