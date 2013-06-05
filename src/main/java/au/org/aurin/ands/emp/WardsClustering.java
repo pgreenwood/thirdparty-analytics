@@ -20,8 +20,10 @@ import org.rosuda.REngine.Rserve.RConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import au.org.aurin.ands.emp.preload.LoadRScriptEmpcluster;
-import au.org.aurin.ands.emp.preload.Rserve;
+import au.edu.uq.aurin.util.Rscript;
+import au.edu.uq.aurin.util.Rserve;
+//import au.org.aurin.ands.emp.preload.LoadRScriptEmpcluster;
+//import au.org.aurin.ands.emp.preload.Rserve;
 
 public class WardsClustering {
   
@@ -148,18 +150,18 @@ public class WardsClustering {
 	
 	
 	@Execute
-	public void compute() throws REXPMismatchException {
+	public void compute() throws REXPMismatchException, IOException {
 		try {
 		  LOGGER.debug("compute executed");
 			// setup the script to execute
 			// 1. load the required script
-			try {
-				this.cIn.assign("script", LoadRScriptEmpcluster.getWardsClusterScript());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-
+		  
+      try {
+      this.cIn.assign("script", Rscript.load("/wardsClustering.r"));
+      } catch (IOException e) {
+        throw new IOException("Unable to load Script", e);
+      }
+		  
 			// 2. setup the inputs
 			this.cIn.assign("geodisthreshold", new REXPInteger(this.geodisthreshold));
 			this.cIn.assign("targetclusternum", new REXPInteger(this.targetclusternum));
