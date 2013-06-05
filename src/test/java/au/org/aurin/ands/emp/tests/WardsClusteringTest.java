@@ -68,7 +68,7 @@ public class WardsClusteringTest {
 		
 		WardsClustering wc = new WardsClustering();
 
-		wc.c = cOut;
+		wc.cIn = cOut;
 		
 		wc.geodisthreshold = 10;
 		wc.targetclusternum = 1;
