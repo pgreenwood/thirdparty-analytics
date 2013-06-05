@@ -32,9 +32,9 @@ public class WardsClusteringTest {
 	}
 	@AfterClass
 	public static void terminateRserve() {
-		boolean rRunning = true;
-		// Stop Rserve if we started it
-		rRunning = Rserve.shutdownRserve();
+	  boolean rRunning = Rserve.shutdownRserve();
+    // 0. Start Rserve - This should already be running, if not we start it
+         rRunning = Rserve.checkLocalRserve();
 		System.out.println("Rserve shutdown? " + rRunning);
 		if (!rRunning) {
 			Assert.fail("Cannot Shutdown Rserve, Check if there are permissions "
