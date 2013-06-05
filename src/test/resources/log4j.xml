@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd" >
+<log4j:configuration>
+    <appender name="stdout" class="org.apache.log4j.ConsoleAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{ABSOLUTE} %5p %c{1}:%L - %m%n"/>
+        </layout>
+    </appender>
+      <logger name="au.org.aurin" additivity="false" >
+        <level value="DEBUG" />
+<!--         <level value="INFO" /> -->
+        <appender-ref ref="stdout"/>
+    </logger>
+     <logger name="org.hibernate" additivity="false" >
+        <level value="ERROR" />
+        <appender-ref ref="stdout"/>
+    </logger>
+     <logger name="au.org.aurin.workflow" additivity="false" >
+        <level value="TRACE" />
+        <appender-ref ref="stdout"/>
+    </logger>
+       <root>
+        <priority value="info"></priority>
+        <appender-ref ref="stdout"/>
+    </root>
+</log4j:configuration>
