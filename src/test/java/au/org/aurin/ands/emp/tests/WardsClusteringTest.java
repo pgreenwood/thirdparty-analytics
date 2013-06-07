@@ -13,9 +13,11 @@ import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 
 
+import au.edu.uq.aurin.util.Rscript;
+import au.edu.uq.aurin.util.Rserve;
 import au.org.aurin.ands.emp.WardsClustering;
-import au.org.aurin.ands.emp.preload.LoadRScriptEmpcluster;
-import au.org.aurin.ands.emp.preload.Rserve;
+//import au.org.aurin.ands.emp.preload.LoadRScriptEmpcluster;
+//import au.org.aurin.ands.emp.preload.Rserve;
 
 
 public class WardsClusteringTest {
@@ -54,7 +56,8 @@ public class WardsClusteringTest {
     System.out.println(rWorkingDir);
       
     RConnection cOut = new RConnection();
-    cOut.assign("script", LoadRScriptEmpcluster.getGeoJSON2DataFrameScript());
+    cOut.assign("script", Rscript.load("/geoJSON2DataFrame.r"));
+    //cOut.assign("script", LoadRScriptEmpcluster.getGeoJSON2DataFrameScript());
     cOut.assign("shpUrl", new REXPString(path));
     cOut.assign("geoJSONFilePath", new REXPString(path + ".geojson"));
     //cOut.assign("geojSONString", new REXPString(this.geojSONString));
@@ -63,12 +66,10 @@ public class WardsClusteringTest {
     cOut.assign("rWorkingDir", new REXPString(rWorkingDir));
       
     cOut.eval("try(eval(parse(text=script)),silent=FALSE)");
-      System.out.println("hashcode cOut in SpatialData2RConnection: " + cOut.hashCode());
-   
-		
+   		
 		WardsClustering wc = new WardsClustering();
 
-		wc.c = cOut;
+		wc.cIn = cOut;
 		
 		wc.geodisthreshold = 10;
 		wc.targetclusternum = 1;

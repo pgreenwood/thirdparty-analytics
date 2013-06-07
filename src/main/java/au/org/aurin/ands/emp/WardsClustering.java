@@ -5,6 +5,7 @@ import java.io.IOException;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Initialize;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 
@@ -19,8 +20,10 @@ import org.rosuda.REngine.Rserve.RConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import au.org.aurin.ands.emp.preload.LoadRScriptEmpcluster;
-import au.org.aurin.ands.emp.preload.Rserve;
+import au.edu.uq.aurin.util.Rscript;
+import au.edu.uq.aurin.util.Rserve;
+//import au.org.aurin.ands.emp.preload.LoadRScriptEmpcluster;
+//import au.org.aurin.ands.emp.preload.Rserve;
 
 public class WardsClustering {
   
@@ -29,7 +32,7 @@ public class WardsClustering {
 	
   @In
 	@Description("Input R connection")
-	public RConnection c;
+	public RConnection cIn;
 	/**
 	 * {@link RConnection} A valid connection to a running {@link Rserve}
 	 * instance
@@ -105,26 +108,65 @@ public class WardsClustering {
 	@Out
 	public RConnection cOut;
 	
+	@Initialize
+	public void validateInputs() throws IllegalArgumentException {
+	  //RConnection
+	  if (this.cIn == null) {
+	    throw new IllegalStateException("RConnection is null");
+	  }
+	  //geodisthreshold
+	  if (this.geodisthreshold < 0) {
+      throw new IllegalStateException("Illegal value for Geo-Distance Threshold: " + this.geodisthreshold);
+    }
+	  //targetclusternum
+	  if (this.targetclusternum < 0) {
+      throw new IllegalStateException("Illegal value for Target Cluster Number: " + this.targetclusternum);
+    }
+	  //interestedColNamesString
+	  if (this.interestedColNamesString == null) {
+      throw new IllegalStateException("Non-Spatial Attribute Selection is null: " + this.interestedColNamesString);
+    }
+	  //Non-Spatial Attribute Weights
+	  if (this.interestedColWeightsString == null) {
+      throw new IllegalStateException("Non-Spatial Attribute Weights is null: " + this.interestedColWeightsString);
+    }
+	  //displayColNamesString
+	  if (this.displayColNamesString == null) {
+      throw new IllegalStateException("Illegal value for Additional Attributes For Display: " + this.displayColNamesString);
+    }
+	  //ignoreEmptyRowJobNum
+    if (this.ignoreEmptyRowJobNum < 0) {
+      throw new IllegalStateException("Illegal value for Non-Spatial Attribute Minimum Count: " + this.ignoreEmptyRowJobNum);
+    }
+	  //Value Chain Mode
+	  if (this.vcmode != true & this.vcmode != false) {
+      throw new IllegalStateException("Illegal value for Value Chain Mode: " + this.vcmode);
+    }
+	  //spatialNonSpatialDistWeightsString
+	  if (this.spatialNonSpatialDistWeightsString == null) {
+      throw new IllegalStateException("Illegal value for Spatial vs Non-Spatial Distance Weights: " + this.spatialNonSpatialDistWeightsString);
+    }
+	}
+	
+	
 	@Execute
-	public void compute() throws REXPMismatchException {
+	public void compute() throws REXPMismatchException, IOException {
 		try {
-		  
 		  LOGGER.debug("compute executed");
-
 			// setup the script to execute
 			// 1. load the required script
-			try {
-				this.c.assign("script", LoadRScriptEmpcluster.getWardsClusterScript());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-
+		  
+      try {
+      this.cIn.assign("script", Rscript.load("/wardsClustering.r"));
+      } catch (IOException e) {
+        throw new IOException("Unable to load Script", e);
+      }
+		  
 			// 2. setup the inputs
-			this.c.assign("geodisthreshold", new REXPInteger(this.geodisthreshold));
-			this.c.assign("targetclusternum", new REXPInteger(this.targetclusternum));
-			this.c.assign("displayColNames", new REXPString(this.interestedColNamesString.split(",")));
-			this.c.assign("interestedColNames", new REXPString(this.interestedColNamesString.split(",")));
+			this.cIn.assign("geodisthreshold", new REXPInteger(this.geodisthreshold));
+			this.cIn.assign("targetclusternum", new REXPInteger(this.targetclusternum));
+			this.cIn.assign("displayColNames", new REXPString(this.interestedColNamesString.split(",")));
+			this.cIn.assign("interestedColNames", new REXPString(this.interestedColNamesString.split(",")));
 			
 			double[] interestedColWeights = {};
 			try {
@@ -134,7 +176,7 @@ public class WardsClustering {
 				e.printStackTrace();
 				}
 			
-			this.c.assign("interestedColWeights", new REXPDouble(interestedColWeights));
+			this.cIn.assign("interestedColWeights", new REXPDouble(interestedColWeights));
 			
 			double[] spatialNonSpatialDistWeights = {0.5, 0.5};
 			try {
@@ -144,16 +186,16 @@ public class WardsClustering {
 				e.printStackTrace();
 			}
 			
-			this.c.assign("spatialNonSpatialDistWeights", new REXPDouble(spatialNonSpatialDistWeights));
-			this.c.assign("gIgnoreEmptyRowJobNum", new REXPDouble(this.ignoreEmptyRowJobNum));
-			this.c.assign("gVcMode", new REXPLogical(this.vcmode));
-			this.c.assign("gErrorOccurs", new REXPLogical(false));
+			this.cIn.assign("spatialNonSpatialDistWeights", new REXPDouble(spatialNonSpatialDistWeights));
+			this.cIn.assign("gIgnoreEmptyRowJobNum", new REXPDouble(this.ignoreEmptyRowJobNum));
+			this.cIn.assign("gVcMode", new REXPLogical(this.vcmode));
+			this.cIn.assign("gErrorOccurs", new REXPLogical(false));
 
 			// 3. call the function defined in the script
 			
 			
 			//this.c.eval("try(eval(parse(text=script)),silent=FALSE)");
-			this.cOut = this.c;
+			this.cOut = this.cIn;
 			LOGGER.debug("executeing eval");
 			REXP r = this.cOut.eval("try(eval(parse(text=script)),silent=FALSE)");
 			LOGGER.debug("eval executed");
